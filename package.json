@@ -2,15 +2,27 @@
   "name": "cursor-rules-cli",
   "version": "0.0.1",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "default": "./lib/index.js"
+    }
+  },
   "bin": "./bin/cursor-rules.cjs",
   "scripts": {
     "clean": "rimraf lib",
-    "build-node": "yarn clean && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json",
-    "prepare": "bun run scripts/build.ts",
-    "cursor-rules": "bun prepare && node --trace-warnings ./bin/cursor-rules.cjs",
-    "repomix": "bun prepare && node --trace-warnings ./bin/cursor-rules.cjs --repomix"
+    "prepare": "rimraf lib && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json",
+    "cursor-rules": "node --trace-warnings bin/cursor-rules.cjs",
+    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,src/get-directory-structure.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
@@ -22,7 +34,6 @@
   "devDependencies": {
     "@types/bun": "^1.2.8",
     "@types/node": "^22.14.0",
-    "bun-plugin-dts": "^0.3.0",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.13",
     "typescript": "^5.8.3"

@@ -94,6 +94,8 @@ export const runCli = async (options: CliOptions) => {
     logger.log(pc.dim('\n📦 Repomixing\n'));
     await repomixAction(['.'], process.cwd(), {
       style: 'xml',
+      compress: true,
+      removeEmptyLines: true,
       includeEmptyDirectories: true,
       output: 'repomix-output.xml',
       instructionFilePath: './src/templates/repomix-instructions/instruction-project-structure.md',

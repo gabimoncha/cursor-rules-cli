@@ -1,0 +1,705 @@
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed, content has been compressed (code blocks are separated by ⋮---- delimiter).
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+- Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: src/wip, src/templates/repomix-instructions, src/actions/defaultAction.ts, src/add-repomix-server.ts, src/get-directory-structure.ts, directory-structure.md, PROJECT_*.md, .cursor, example
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+bin/
+  cursor-rules.cjs
+src/
+  cli/
+    actions/
+      defaultAction.ts
+      initAction.ts
+      versionAction.ts
+    cliRun.ts
+    types.ts
+  core/
+    file/
+      packageJsonParse.ts
+      rulesFinder.ts
+  shared/
+    constants.ts
+    errorHandle.ts
+    logger.ts
+  templates/
+    rules-default/
+      cursor-rules.md
+      project-overview.md
+      project-structure.md
+      task-list.md
+  index.ts
+.gitignore
+.tool-versions
+LICENSE
+package.json
+README.md
+tsconfig.build.json
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/cli/actions/defaultAction.ts">
+import path from 'node:path';
+import { loadFileConfig, mergeConfigs } from '../../config/configLoad.js';
+import {
+  type RepomixConfigCli,
+  type RepomixConfigFile,
+  type RepomixConfigMerged,
+  type RepomixOutputStyle,
+  repomixConfigCliSchema,
+} from '../../config/configSchema.js';
+import { type PackResult, pack } from '../../core/packager.js';
+import { rethrowValidationErrorIfZodError } from '../../shared/errorHandle.js';
+import { logger } from '../../shared/logger.js';
+import { printCompletion, printSecurityCheck, printSummary, printTopFiles } from '../cliPrint.js';
+import { Spinner } from '../cliSpinner.js';
+import type { CliOptions } from '../types.js';
+import { runMigrationAction } from './migrationAction.js';
+export interface DefaultActionRunnerResult {
+  packResult: PackResult;
+  config: RepomixConfigMerged;
+}
+export const runDefaultAction = async (
+  directories: string[],
+  cwd: string,
+  cliOptions: CliOptions,
+): Promise<DefaultActionRunnerResult> =>
+/**
+ * Builds CLI configuration from command-line options.
+ *
+ * Note: Due to Commander.js behavior with --no-* flags:
+ * - When --no-* flags are used (e.g., --no-file-summary), the options explicitly become false
+ * - When no flag is specified, Commander defaults to true (e.g., options.fileSummary === true)
+ * - For --no-* flags, we only apply the setting when it's explicitly false to respect config file values
+ * - This allows the config file to maintain control unless explicitly overridden by CLI
+ */
+export const buildCliConfig = (options: CliOptions): RepomixConfigCli =>
+</file>
+
+<file path="src/core/file/rulesFinder.ts">
+import path from 'node:path';
+⋮----
+import { logger } from '~/shared/logger.js';
+const parsePackageJson = async (): Promise<
+</file>
+
+<file path="bin/cursor-rules.cjs">
+const [major] = nodeVersion.split('.').map(Number);
+⋮----
+console.error(`Repomix requires Node.js version 16 or higher. Current version: ${nodeVersion}\n`);
+process.exit(EXIT_CODES.ERROR);
+⋮----
+function setupErrorHandlers() {
+process.on('uncaughtException', (error) => {
+console.error('Uncaught Exception:', error);
+⋮----
+process.on('unhandledRejection', (reason) => {
+console.error('Unhandled Promise Rejection:', reason);
+⋮----
+function shutdown() {
+process.exit(EXIT_CODES.SUCCESS);
+⋮----
+process.on('SIGINT', () => {
+console.log('\nReceived SIGINT. Shutting down...');
+shutdown();
+⋮----
+process.on('SIGTERM', shutdown);
+⋮----
+setupErrorHandlers();
+⋮----
+await run();
+⋮----
+console.error('Fatal Error:', {
+⋮----
+console.error('Fatal Error:', error);
+</file>
+
+<file path="src/cli/actions/initAction.ts">
+import { cancel, outro, intro, select, multiselect, group as groupPrompt } from '@clack/prompts';
+export const runInitAction = async () =>
+</file>
+
+<file path="src/cli/actions/versionAction.ts">
+import pc from 'picocolors';
+import { getVersion } from '~/core/file/packageJsonParse.js';
+import { logger } from '~/shared/logger.js';
+export const runVersionAction = async (): Promise<void> =>
+</file>
+
+<file path="src/cli/cliRun.ts">
+import process from 'node:process';
+import { Option, program } from 'commander';
+import pc from 'picocolors';
+import { runDefaultAction as repomixAction } from 'repomix';
+import { handleError } from '~/shared/errorHandle.js';
+import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
+import { runInitAction } from './actions/initAction.js';
+import { runVersionAction } from './actions/versionAction.js';
+import type { CliOptions } from './types.js';
+⋮----
+export const run = async () =>
+⋮----
+// Check if the option has a semantic match
+⋮----
+// We have a direct semantic match
+⋮----
+// Fall back to the original Commander error handler
+⋮----
+const commanderActionEndpoint = async (options: CliOptions =
+export const runCli = async (options: CliOptions) =>
+⋮----
+// Set log level based on verbose and quiet flags
+</file>
+
+<file path="src/cli/types.ts">
+import type { OptionValues } from 'commander';
+export interface CliOptions extends OptionValues {
+  version?: boolean;
+  structure?: boolean;
+  overview?: boolean;
+  repomix?: boolean;
+  init?: boolean;
+  verbose?: boolean;
+  quiet?: boolean;
+}
+</file>
+
+<file path="src/core/file/packageJsonParse.ts">
+import path from 'node:path';
+⋮----
+import { logger } from '~/shared/logger.js';
+export const getVersion = async (): Promise<string> =>
+const parsePackageJson = async (): Promise<
+</file>
+
+<file path="src/shared/constants.ts">
+
+</file>
+
+<file path="src/shared/errorHandle.ts">
+import { z } from 'zod';
+import { CURSOR_RULES_ISSUES_URL } from './constants.js';
+import { logger, cursorRulesLogLevels } from './logger.js';
+export class CursorRulesError extends Error
+⋮----
+constructor(message: string)
+⋮----
+export class CursorRulesConfigValidationError extends CursorRulesError
+export const handleError = (error: unknown): void =>
+⋮----
+// If expected error, show stack trace for debugging
+⋮----
+// If unexpected error, show stack trace by default
+⋮----
+export const rethrowValidationErrorIfZodError = (error: unknown, message: string): void =>
+</file>
+
+<file path="src/shared/logger.ts">
+import util from 'node:util';
+import pc from 'picocolors';
+⋮----
+export type CursorRulesLogLevel = (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
+class CursorRulesLogger
+⋮----
+constructor()
+init()
+setLogLevel(level: CursorRulesLogLevel)
+getLogLevel(): CursorRulesLogLevel
+error(...args: unknown[])
+warn(...args: unknown[])
+success(...args: unknown[])
+info(...args: unknown[])
+log(...args: unknown[])
+note(...args: unknown[])
+debug(...args: unknown[])
+trace(...args: unknown[])
+private formatArgs(args: unknown[]): string
+⋮----
+export const setLogLevel = (level: CursorRulesLogLevel) =>
+</file>
+
+<file path="src/templates/rules-default/cursor-rules.md">
+---
+description: How to add or edit Cursor rules in our project
+globs: 
+alwaysApply: false
+---
+# Cursor Rules Location
+
+How to add new cursor rules to the project
+
+1. Always place rule files in PROJECT_ROOT/.cursor/rules/:
+    ```
+    .cursor/rules/
+    ├── your-rule-name.mdc
+    ├── another-rule.mdc
+    └── ...
+    ```
+
+2. Follow the naming convention:
+    - Use kebab-case for filenames
+    - Always use .mdc extension
+    - Make names descriptive of the rule's purpose
+
+3. Directory structure:
+    ```
+    PROJECT_ROOT/
+    ├── .cursor/
+    │   └── rules/
+    │       ├── your-rule-name.mdc
+    │       └── ...
+    └── ...
+    ```
+
+4. Never place rule files:
+    - In the project root
+    - In subdirectories outside .cursor/rules
+    - In any other location
+
+5. Cursor rules have the following structure:
+
+````
+---
+description: Short description of the rule's purpose
+globs: optional/path/pattern/**/* 
+alwaysApply: false
+---
+# Rule Title
+
+Main content explaining the rule with markdown formatting.
+
+1. Step-by-step instructions
+2. Code examples
+3. Guidelines
+
+Example:
+```typescript
+// Good example
+function goodExample() {
+  // Implementation following guidelines
+}
+
+// Bad example
+function badExample() {
+  // Implementation not following guidelines
+}
+```
+````
+</file>
+
+<file path="src/templates/rules-default/project-overview.md">
+---
+description: Project overview
+globs: 
+alwaysApply: true
+---
+## Project Overview
+</file>
+
+<file path="src/templates/rules-default/project-structure.md">
+---
+description: Project structure and file organization guidelines
+globs: 
+alwaysApply: false
+---
+## Project Structure
+</file>
+
+<file path="src/templates/rules-default/task-list.md">
+---
+description: Guidelines for creating and managing task lists in markdown files to track project progress
+globs: 
+alwaysApply: false
+---
+Guidelines for creating and managing task lists in markdown files to track project progress
+
+## Task List Creation
+
+1. Create task lists in a markdown file (in the project root):
+   - Use `TASKS.md` or a descriptive name relevant to the feature (e.g., `ASSISTANT_CHAT.md`)
+   - Include a clear title and description of the feature being implemented
+
+2. Structure the file with these sections:
+   ```markdown
+   # Feature Name Implementation
+   
+   Brief description of the feature and its purpose.
+   
+   ## Completed Tasks
+   
+   - [x] Task 1 that has been completed
+   - [x] Task 2 that has been completed
+   
+   ## In Progress Tasks
+   
+   - [ ] Task 3 currently being worked on
+   - [ ] Task 4 to be completed soon
+   
+   ## Future Tasks
+   
+   - [ ] Task 5 planned for future implementation
+   - [ ] Task 6 planned for future implementation
+   
+   ## Implementation Plan
+   
+   Detailed description of how the feature will be implemented.
+   
+   ### Relevant Files
+   
+   - path/to/file1.ts - Description of purpose
+   - path/to/file2.ts - Description of purpose
+   ```
+
+## Task List Maintenance
+
+1. Update the task list as you progress:
+   - Mark tasks as completed by changing `[ ]` to `[x]`
+   - Add new tasks as they are identified
+   - Move tasks between sections as appropriate
+
+2. Keep "Relevant Files" section updated with:
+   - File paths that have been created or modified
+   - Brief descriptions of each file's purpose
+   - Status indicators (e.g., ✅) for completed components
+
+3. Add implementation details:
+   - Architecture decisions
+   - Data flow descriptions
+   - Technical components needed
+   - Environment configuration
+
+## AI Instructions
+
+When working with task lists, the AI should:
+
+1. Regularly update the task list file after implementing significant components
+2. Mark completed tasks with [x] when finished
+3. Add new tasks discovered during implementation
+4. Maintain the "Relevant Files" section with accurate file paths and descriptions
+5. Document implementation details, especially for complex features
+6. When implementing tasks one by one, first check which task to implement next
+7. After implementing a task, update the file to reflect progress
+
+## Example Task Update
+
+When updating a task from "In Progress" to "Completed":
+
+```markdown
+## In Progress Tasks
+
+- [ ] Implement database schema
+- [ ] Create API endpoints for data access
+
+## Completed Tasks
+
+- [x] Set up project structure
+- [x] Configure environment variables
+```
+
+Should become:
+
+```markdown
+## In Progress Tasks
+
+- [ ] Create API endpoints for data access
+
+## Completed Tasks
+
+- [x] Set up project structure
+- [x] Configure environment variables
+- [x] Implement database schema
+```
+</file>
+
+<file path="src/index.ts">
+
+</file>
+
+<file path=".tool-versions">
+bun 1.2.8
+yarn 1.22.22
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2025 gabimoncha
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
+<file path="tsconfig.build.json">
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src"
+  },
+  "include": ["./src/**/*"]
+}
+</file>
+
+<file path=".gitignore">
+# dependencies (bun install)
+node_modules
+
+# output
+out
+dist
+*.tgz
+lib
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+_.log
+*.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# Editor directories and files
+.vscode/
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# yarn
+.yarn/
+</file>
+
+<file path="package.json">
+{
+  "name": "cursor-rules-cli",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "default": "./lib/index.js"
+    }
+  },
+  "bin": "./bin/cursor-rules.cjs",
+  "scripts": {
+    "clean": "rimraf lib",
+    "prepare": "rimraf lib && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json",
+    "cursor-rules": "node --trace-warnings bin/cursor-rules.cjs",
+    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,src/get-directory-structure.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "commander": "^13.1.0",
+    "repomix": "^0.3.1",
+    "tree-node-cli": "^1.6.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.8",
+    "@types/node": "^22.14.0",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.13",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}
+</file>
+
+<file path="README.md">
+# cursor-rules
+
+To install dependencies:
+
+```bash
+bun install
+```
+
+To run:
+
+```bash
+bun run index.ts
+```
+
+This project was created using `bun init` in bun v1.2.8. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+
+## Acknowledgements
+
+Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
+
+Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
+</file>
+
+<file path="tsconfig.json">
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "outDir": "./lib",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node", "picocolors"],
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/cli/actions/defaultAction.ts", "src/get-directory-structure.ts"]
+}
+</file>
+
+</files>
+
+<instruction>
+This file contains the entire codebase of library. Generate a comprehensive PROJECT_OVERVIEW.md of the project, including its main purpose, key features, directory structure and overall architecture. Use directory_structure from this file, to create a formatted tree structure of the project, with a short description for each folder.
+
+Example PROJECT_STRUCTURE.md output:
+
+```markdown
+---
+description: Project structure and file organization guidelines
+globs: 
+alwaysApply: false
+---
+# Project structure
+
+Short description of the project
+
+## Purpose
+
+The purpose of the project
+
+## Key features
+
+- Feature 1: do something
+- Feature 2: do something else
+
+## Directory structure
+
+```tree
+.
+├── parent_folder/             # this is the parent_folder description
+│   ├── child_folder/               # this is the child_folder description
+│   └── other_child_folder/         # this is the other_child_folder description
+└── single_folder/             # this is the single folder description
+```
+
+## Usage
+
+Run command 
+
+## Technical implementation
+
+The project is built with:
+- TypeScript: for type-safe code
+
+## Future Enhancements
+
+- Add support for feature 3
+- Enhance feature 2
+```
+</instruction>

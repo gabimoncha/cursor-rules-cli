@@ -3,5 +3,76 @@ description: Project structure and file organization guidelines
 globs: 
 alwaysApply: false
 ---
-## Project Structure
+# Cursor Rules CLI
 
+A command-line tool for adding AI-powered documentation templates to projects using the Cursor IDE. These templates enhance AI functionality by providing structured guidelines that help the AI better understand and navigate your codebase.
+
+## Purpose
+
+Cursor Rules CLI simplifies the process of adding AI documentation to your projects. It provides a set of default templates that establish patterns and conventions, making it easier for Cursor's AI to assist with development tasks effectively.
+
+## Key Features
+
+- **Template Initialization**: Quickly add AI documentation templates to any project
+- **Default Templates**: Includes ready-to-use templates for common documentation needs
+- **Custom Rules Support**: Allows creation of project-specific AI guidelines
+- **Simple CLI Interface**: Easy-to-use command line tool built with Bun
+
+## Directory Structure
+
+```tree
+.
+├── .cursor/                   # Cursor IDE configuration directory
+│   └── rules/                      # Contains cursor rule files used by the AI
+├── bin/                       # Binary and executable files
+│   └── cursor-rules.cjs            # Main CLI executable entry point
+├── example/                   # Example project for demonstration
+├── src/                       # Source code for the CLI tool
+│   ├── cli/                        # CLI implementation
+│   │   └── actions/                     # Command handlers (init, version)
+│   ├── core/                       # Core functionality 
+│   │   └── file/                        # File system operations
+│   ├── shared/                     # Shared utilities and constants
+│   ├── templates/                  # Template files used by the CLI
+│   │   ├── repomix-instructions/        # Instructions for code analyzer
+│   │   └── rules-default/               # Default rule templates
+│   └── wip/                        # Work in progress features
+│       └── rules/                       # Draft rule templates in development
+```
+
+## Default Templates
+
+The CLI provides the following default templates:
+- **cursor-rules.md**: Guidelines for adding and organizing AI rules
+- **project-overview.md**: Template for project description and purpose
+- **project-structure.md**: Documentation of project structure and organization
+- **task-list.md**: Guidelines for tracking project progress with task lists
+
+## Usage
+
+Install the CLI:
+```bash
+npm install -g cursor-rules-cli
+```
+
+Initialize rules in your project:
+```bash
+cursor-rules init
+```
+
+## Technical Implementation
+
+The project is built with:
+- **Bun**: As the JavaScript runtime environment
+- **TypeScript**: For type-safe code
+- **Commander.js**: For CLI argument parsing
+- **Clack**: For interactive CLI prompts
+- **Zod**: For configuration validation
+- **Repomix**: For codebase analysis (optional integration)
+
+## Future Enhancements
+
+- Add support for custom template repositories
+- Implement more specialized rule templates for different project types
+- Add rule validation and linting capabilities
+- Improve integration with Cursor IDE features 

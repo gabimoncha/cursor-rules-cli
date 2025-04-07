@@ -39,8 +39,8 @@ function setupErrorHandlers() {
   try {
     setupErrorHandlers();
 
-    const { cli } = await import('../dist/index.js');
-    await cli();
+    const { run } = await import('../lib/cli/cliRun.js');
+    await run();
   } catch (error) {
     if (error instanceof Error) {
       console.error('Fatal Error:', {
