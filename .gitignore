@@ -5,6 +5,7 @@ node_modules
 out
 dist
 *.tgz
+lib
 
 # code coverage
 coverage
@@ -13,6 +14,7 @@ coverage
 # logs
 logs
 _.log
+*.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # dotenv environment variable files
@@ -27,8 +29,19 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
-# IntelliJ based IDEs
+# Editor directories and files
+.vscode/
 .idea
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# yarn
+.yarn/

@@ -1,16 +1,31 @@
 {
   "name": "cursor-rules-cli",
+  "version": "0.0.1",
   "type": "module",
-  "main": "index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": "./bin/cursor-rules.cjs",
   "scripts": {
-    "generate-repomix": "repomix --style xml --include-empty-directories --output repomix-output.xml --instruction-file-path ./src/templates/repomix-instructions/instruction-project-structure.md"
+    "clean": "rimraf lib",
+    "build-node": "yarn clean && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json",
+    "prepare": "bun run scripts/build.ts",
+    "cursor-rules": "bun prepare && node --trace-warnings ./bin/cursor-rules.cjs",
+    "repomix": "bun prepare && node --trace-warnings ./bin/cursor-rules.cjs --repomix"
   },
   "dependencies": {
+    "@clack/prompts": "^0.10.0",
     "commander": "^13.1.0",
     "repomix": "^0.3.1",
-    "tree-node-cli": "^1.6.0"
+    "tree-node-cli": "^1.6.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.8"
-  }
+    "@types/bun": "^1.2.8",
+    "@types/node": "^22.14.0",
+    "bun-plugin-dts": "^0.3.0",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.13",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
