@@ -1,0 +1,16 @@
+{
+  "name": "cursor-rules-cli",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "generate-repomix": "repomix --style xml --include-empty-directories --output repomix-output.xml --instruction-file-path ./src/templates/repomix-instructions/instruction-project-structure.md"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "repomix": "^0.3.1",
+    "tree-node-cli": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.8"
+  }
+}

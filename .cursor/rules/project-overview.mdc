@@ -1,0 +1,14 @@
+---
+description: Project overview
+globs: 
+alwaysApply: true
+---
+## Project Overview
+
+This project is a CLI created with Bun. It's role is to add template rules to any project that's using the Cursor IDE, in order to improve the AI functionality.
+
+The default templates are:
+- [cursor-rules.md](mdc:src/templates/rules-default/cursor-rules.md)
+- [project-overview.md](mdc:src/templates/rules-default/project-overview.md)
+- [project-structure.md](mdc:src/templates/rules-default/project-structure.md)
+- [task-list.md](mdc:src/templates/rules-default/task-list.md)
