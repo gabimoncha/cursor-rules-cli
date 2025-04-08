@@ -23,5 +23,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["src/cli/actions/defaultAction.ts", "src/get-directory-structure.ts"]
+  "exclude": ["src/cli/actions/defaultAction.ts"]
 }

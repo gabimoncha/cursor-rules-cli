@@ -13,7 +13,7 @@
     },
     "cli": {
       "name": "@gabimoncha/cursor-rules",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "bin": {
         "cursor-rules": "bin/cursor-rules.js",
       },

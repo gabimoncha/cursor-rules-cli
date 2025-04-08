@@ -1,7 +1,7 @@
 {
   "name": "example",
-  "private": true,
   "version": "0.0.1",
+  "private": true,
   "scripts": {
     "rules": "cursor-rules",
     "repomix": "cursor-rules --repomix",
