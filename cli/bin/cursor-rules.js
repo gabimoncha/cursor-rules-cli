@@ -9,7 +9,7 @@ const EXIT_CODES = {
 };
 
 if (major < 16) {
-  console.error(`Repomix requires Node.js version 16 or higher. Current version: ${nodeVersion}\n`);
+  console.error(`Cursor Rules requires Node.js version 18 or higher. Current version: ${nodeVersion}\n`);
   process.exit(EXIT_CODES.ERROR);
 }
 
@@ -54,4 +54,4 @@ function setupErrorHandlers() {
 
     process.exit(EXIT_CODES.ERROR);
   }
-})();
+})(); 

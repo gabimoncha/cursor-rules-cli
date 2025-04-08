@@ -27,14 +27,12 @@ The content is organized as follows:
   between different files in the repository.
 - Be aware that this file may contain sensitive information. Handle it with
   the same level of security as you would the original repository.
-
-- Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
 </usage_guidelines>
 
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Files matching these patterns are excluded: src/wip, src/templates/repomix-instructions, src/actions/defaultAction.ts, src/add-repomix-server.ts, directory-structure.md, PROJECT_*.md, .cursor, example
+- Files matching these patterns are excluded: cli/src/wip, cli/src/templates/repomix-instructions, cli/src/actions/defaultAction.ts, cli/src/add-repomix-server.ts, PROJECT_*.md, .cursor, lib, *.log
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Code comments have been removed from supported file types
@@ -49,46 +47,59 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
-bin/
-  cursor-rules.cjs
-src/
-  cli/
-    actions/
-      defaultAction.ts
-      initAction.ts
-      versionAction.ts
-    cliRun.ts
-    types.ts
-  core/
-    file/
-      installRules.ts
-      packageJsonParse.ts
-  shared/
-    constants.ts
-    errorHandle.ts
-    logger.ts
-  templates/
-    rules-default/
-      cursor-rules.md
-      project-structure.md
-      task-list.md
+cli/
+  bin/
+    cursor-rules.js
+  src/
+    cli/
+      actions/
+        defaultAction.ts
+        initAction.ts
+        versionAction.ts
+      cliRun.ts
+      types.ts
+    core/
+      file/
+        installRules.ts
+        packageJsonParse.ts
+    shared/
+      constants.ts
+      errorHandle.ts
+      logger.ts
+    templates/
+      rules-default/
+        cursor-rules.md
+        project-structure.md
+        task-list.md
+    index.ts
+  package.json
+  tsconfig.build.json
+  tsconfig.json
+example/
+  parent_folder/
+    child_folder/
+      index.ts
+    other_child_folder/
+      index.ts
+  single_folder/
+    index.ts
   index.ts
+  package.json
 .gitignore
 .tool-versions
 LICENSE
 package.json
 README.md
-tsconfig.build.json
-tsconfig.json
+repomix.config.json
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
 
-<file path="bin/cursor-rules.cjs">
+<file path="cli/bin/cursor-rules.js">
 const [major] = nodeVersion.split('.').map(Number);
 ⋮----
-console.error(`Repomix requires Node.js version 16 or higher. Current version: ${nodeVersion}\n`);
+console.error(`Cursor Rules requires Node.js version 18 or higher. Current version: ${nodeVersion}\n`);
 process.exit(EXIT_CODES.ERROR);
 ⋮----
 function setupErrorHandlers() {
@@ -116,7 +127,7 @@ console.error('Fatal Error:', {
 console.error('Fatal Error:', error);
 </file>
 
-<file path="src/cli/actions/defaultAction.ts">
+<file path="cli/src/cli/actions/defaultAction.ts">
 import path from 'node:path';
 import { loadFileConfig, mergeConfigs } from '../../config/configLoad.js';
 import {
@@ -144,23 +155,23 @@ export const runDefaultAction = async (
 ): Promise<DefaultActionRunnerResult> =>
 </file>
 
-<file path="src/cli/actions/initAction.ts">
+<file path="cli/src/cli/actions/initAction.ts">
 import { cancel, outro, intro, select, multiselect, group as groupPrompt } from '@clack/prompts';
 import pc from 'picocolors';
 import { installRules } from '~/core/file/installRules.js';
-export const runInitAction = async (templateDir: string) =>
+export const runInitAction = async (rulesDir: string) =>
 async function promptYoloMode()
 async function promptRepomix()
 </file>
 
-<file path="src/cli/actions/versionAction.ts">
+<file path="cli/src/cli/actions/versionAction.ts">
 import pc from 'picocolors';
 import { getVersion } from '~/core/file/packageJsonParse.js';
 import { logger } from '~/shared/logger.js';
 export const runVersionAction = async (): Promise<void> =>
 </file>
 
-<file path="src/cli/cliRun.ts">
+<file path="cli/src/cli/cliRun.ts">
 import process from 'node:process';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -173,7 +184,7 @@ import { installRules } from '~/core/file/installRules.js';
 import { runInitAction } from './actions/initAction.js';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
-import {outro} from '@clack/prompts';
+import { outro } from '@clack/prompts';
 ⋮----
 export const run = async () =>
 ⋮----
@@ -189,7 +200,7 @@ export const runCli = async (options: CliOptions) =>
 // Set log level based on verbose and quiet flags
 </file>
 
-<file path="src/cli/types.ts">
+<file path="cli/src/cli/types.ts">
 import type { OptionValues } from 'commander';
 export interface CliOptions extends OptionValues {
   version?: boolean;
@@ -202,7 +213,7 @@ export interface CliOptions extends OptionValues {
 }
 </file>
 
-<file path="src/core/file/installRules.ts">
+<file path="cli/src/core/file/installRules.ts">
 import fs from "node:fs/promises";
 import path from "node:path";
 import { select } from "@clack/prompts";
@@ -210,7 +221,7 @@ import { logger } from "~/shared/logger.js";
 export async function installRules(templateDir: string, overwrite: boolean = false): Promise<boolean>
 </file>
 
-<file path="src/core/file/packageJsonParse.ts">
+<file path="cli/src/core/file/packageJsonParse.ts">
 import path from 'node:path';
 ⋮----
 import { logger } from '~/shared/logger.js';
@@ -218,11 +229,11 @@ export const getVersion = async (): Promise<string> =>
 const parsePackageJson = async (): Promise<
 </file>
 
-<file path="src/shared/constants.ts">
+<file path="cli/src/shared/constants.ts">
 
 </file>
 
-<file path="src/shared/errorHandle.ts">
+<file path="cli/src/shared/errorHandle.ts">
 import { z } from 'zod';
 import { CURSOR_RULES_ISSUES_URL } from './constants.js';
 import { logger, cursorRulesLogLevels } from './logger.js';
@@ -240,7 +251,7 @@ export const handleError = (error: unknown): void =>
 export const rethrowValidationErrorIfZodError = (error: unknown, message: string): void =>
 </file>
 
-<file path="src/shared/logger.ts">
+<file path="cli/src/shared/logger.ts">
 import util from 'node:util';
 import pc from 'picocolors';
 ⋮----
@@ -264,7 +275,7 @@ private formatArgs(args: unknown[]): string
 export const setLogLevel = (level: CursorRulesLogLevel) =>
 </file>
 
-<file path="src/templates/rules-default/cursor-rules.md">
+<file path="cli/src/templates/rules-default/cursor-rules.md">
 ---
 description: How to add or edit Cursor rules in our project
 globs: 
@@ -333,7 +344,7 @@ function badExample() {
 ````
 </file>
 
-<file path="src/templates/rules-default/project-structure.md">
+<file path="cli/src/templates/rules-default/project-structure.md">
 ---
 description: Project structure and file organization guidelines
 globs: 
@@ -342,7 +353,7 @@ alwaysApply: false
 ## Project Structure
 </file>
 
-<file path="src/templates/rules-default/task-list.md">
+<file path="cli/src/templates/rules-default/task-list.md">
 ---
 description: Guidelines for creating and managing task lists in markdown files to track project progress
 globs: 
@@ -448,8 +459,154 @@ Should become:
 ```
 </file>
 
-<file path="src/index.ts">
+<file path="cli/src/index.ts">
 
+</file>
+
+<file path="cli/package.json">
+{
+  "name": "@gabimoncha/cursor-rules",
+  "description": "A CLI tool to add Cursor rules to a project",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+  },
+  "author": "gabimoncha <gabimoncha@gmail.com>",
+  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "/lib",
+    "/bin",
+    "!src"
+  ],
+  "bin": {
+    "cursor-rules": "bin/cursor-rules.js"
+  },
+  "scripts": {
+    "clean": "rimraf lib",
+    "prepare": "bun clean && tsc -p tsconfig.build.json --sourceMap --declaration && bunx tsc-alias -p tsconfig.build.json && bun copy-templates",
+    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/",
+    "prompt": "bun prepare && node --trace-warnings bin/cursor-rules.js --init"
+  },
+  "keywords": [
+    "repository",
+    "cli",
+    "generative-ai",
+    "ai",
+    "llm",
+    "source-code",
+    "code-analysis",
+    "development-tool",
+    "cursor",
+    "cursor-directory",
+    "cursor-rules",
+    "cursor-rules-cli",
+    "cursor-ide",
+    "cursor-editor",
+    "cursor-rules-generator",
+    "cursor-rules-generator-cli"
+  ],
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "commander": "^13.1.0",
+    "repomix": "^0.3.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.8",
+    "@types/node": "^22.14.0",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.13",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "directories": {
+    "example": "example",
+    "lib": "lib"
+  }
+}
+</file>
+
+<file path="cli/tsconfig.build.json">
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src"
+  },
+  "include": ["./src/**/*"]
+}
+</file>
+
+<file path="cli/tsconfig.json">
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "outDir": "./lib",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node", "picocolors"],
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/cli/actions/defaultAction.ts", "src/get-directory-structure.ts"]
+}
+</file>
+
+<file path="example/parent_folder/child_folder/index.ts">
+
+</file>
+
+<file path="example/parent_folder/other_child_folder/index.ts">
+
+</file>
+
+<file path="example/single_folder/index.ts">
+
+</file>
+
+<file path="example/index.ts">
+
+</file>
+
+<file path="example/package.json">
+{
+  "name": "example",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "rules": "cursor-rules",
+    "repomix": "cursor-rules --repomix",
+    "yolo": "cursor-rules --yolo"
+  },
+  "dependencies": {
+    "@gabimoncha/cursor-rules": "workspace:*"
+  }
+}
 </file>
 
 <file path=".gitignore">
@@ -534,44 +691,33 @@ SOFTWARE.
 <file path="package.json">
 {
   "name": "cursor-rules-cli",
-  "version": "0.0.1",
-  "type": "module",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+  },
+  "author": "gabimoncha <gabimoncha@gmail.com>",
+  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
   "license": "MIT",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
-      },
-      "require": {
-        "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
-      },
-      "default": "./lib/index.js"
-    }
-  },
-  "bin": "./bin/cursor-rules.cjs",
+  "workspaces": [
+    "cli",
+    "example"
+  ],
   "scripts": {
-    "clean": "rimraf lib",
-    "prepare": "bun clean && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json && bun copy-templates",
-    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/",
-    "install-rules": "bun prepare && node --trace-warnings bin/cursor-rules.cjs",
-    "prompt": "bun prepare && node --trace-warnings bin/cursor-rules.cjs --init",
-    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md --no-git-sort-by-changes"
-  },
-  "dependencies": {
-    "@clack/prompts": "^0.10.0",
-    "commander": "^13.1.0",
-    "repomix": "^0.3.1",
-    "zod": "^3.24.2"
+    "repomix": "rimraf repomix-output.xml && repomix --config repomix.config.json",
+    "prepublishOnly": "bun --cwd cli prepare",
+    "test:rules": "cd example && bun rules",
+    "test:repomix": "cd example && bun repomix",
+    "test:yolo": "cd example && bun yolo"
   },
   "devDependencies": {
     "@types/bun": "^1.2.8",
     "@types/node": "^22.14.0",
+    "repomix": "^0.3.1",
     "rimraf": "^6.0.1",
-    "tsc-alias": "^1.8.13",
     "typescript": "^5.8.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
@@ -602,94 +748,47 @@ Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules 
 Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
 </file>
 
-<file path="tsconfig.build.json">
+<file path="repomix.config.json">
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "./src"
-  },
-  "include": ["./src/**/*"]
-}
-</file>
-
-<file path="tsconfig.json">
-{
-  "compileOnSave": false,
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2022",
-    "outDir": "./lib",
-    "rootDir": ".",
-    "strict": true,
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "skipLibCheck": true,
-    "lib": ["ES2022"],
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "types": ["node", "picocolors"],
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["./src/*"]
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "parsableStyle": false,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": true,
+    "removeEmptyLines": true,
+    "compress": true,
+    "topFilesLength": 5,
+    "showLineNumbers": false,
+    "copyToClipboard": false,
+    "git": {
+      "sortByChanges": false,
+      "sortByChangesMaxCommits": 100
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/cli/actions/defaultAction.ts", "src/get-directory-structure.ts"]
+  "include": [],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "cli/src/wip",
+      "cli/src/templates/repomix-instructions",
+      "cli/src/actions/defaultAction.ts",
+      "cli/src/add-repomix-server.ts",
+      "PROJECT_*.md",
+      ".cursor",
+      "lib",
+      "*.log"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
 }
 </file>
 
 </files>
-
-<instruction>
-This file contains the entire codebase of library. Generate a comprehensive PROJECT_OVERVIEW.md of the project, including its main purpose, key features, directory structure and overall architecture. Use directory_structure from this file, to create a formatted tree structure of the project, with a short description for each folder.
-
-Example PROJECT_STRUCTURE.md output:
-
-```markdown
----
-description: Project structure and file organization guidelines
-globs: 
-alwaysApply: false
----
-# Project structure
-
-Short description of the project
-
-## Purpose
-
-The purpose of the project
-
-## Key features
-
-- Feature 1: do something
-- Feature 2: do something else
-
-## Directory structure
-
-```tree
-.
-├── parent_folder/             # this is the parent_folder description
-│   ├── child_folder/               # this is the child_folder description
-│   └── other_child_folder/         # this is the other_child_folder description
-└── single_folder/             # this is the single folder description
-```
-
-## Usage
-
-Run command 
-
-## Technical implementation
-
-The project is built with:
-- TypeScript: for type-safe code
-
-## Future Enhancements
-
-- Add support for feature 3
-- Enhance feature 2
-```
-</instruction>

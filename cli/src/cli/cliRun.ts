@@ -15,8 +15,9 @@ import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
 import { outro } from '@clack/prompts';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const templateDir = path.join(__dirname, '..', 'templates', 'rules-default');
+const templateDir = path.join(dirname(fileURLToPath(import.meta.url)), '..', 'templates');
+const rulesDir = path.join(templateDir, 'rules-default');
+const repomixInstructionsDir = path.join(templateDir, 'repomix-instructions');
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
@@ -106,7 +107,7 @@ export const runCli = async (options: CliOptions) => {
       gitSortByChanges: false,
       includeEmptyDirectories: true,
       output: 'repomix-output.xml',
-      instructionFilePath: './src/templates/repomix-instructions/instruction-project-structure.md',
+      instructionFilePath: path.join(repomixInstructionsDir, 'instruction-project-structure.md'),
     });
     return;
   }
@@ -117,7 +118,7 @@ export const runCli = async (options: CliOptions) => {
   }
 
   if (options.init) {
-    await runInitAction(templateDir);
+    await runInitAction(rulesDir);
     return;
   }
 
@@ -125,7 +126,7 @@ export const runCli = async (options: CliOptions) => {
   //   return await runMcpAction();
   // }
 
-  const result = await installRules(templateDir);
+  const result = await installRules(rulesDir);
 
   if (result) {
     outro(pc.green(`You're all set!`));

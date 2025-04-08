@@ -1,0 +1,13 @@
+{
+  "name": "example",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "rules": "cursor-rules",
+    "repomix": "cursor-rules --repomix",
+    "yolo": "cursor-rules --yolo"
+  },
+  "dependencies": {
+    "@gabimoncha/cursor-rules": "workspace:*"
+  }
+}
