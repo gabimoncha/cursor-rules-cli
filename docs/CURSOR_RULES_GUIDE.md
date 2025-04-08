@@ -1,4 +1,5 @@
-# Comprehensive Guide to Using Cursor Rules (Made with AI, dogfooding `cursor-rules`)
+# Comprehensive Guide to Using Cursor Rules
+> Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
 This guide provides detailed information on how to create, configure, and use Cursor rules effectively to enhance AI assistance in your projects.
 

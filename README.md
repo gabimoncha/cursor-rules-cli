@@ -1,4 +1,5 @@
-# Cursor Rules CLI (Made with AI, dogfooding `cursor-rules`)
+# Cursor Rules CLI
+> Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
 A command-line tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
 
@@ -81,7 +82,13 @@ cursor-rules --help
 # Display the current version
 cursor-rules --version
 
-# Initialize with specific templates only
+# List existing rules
+cursor-rules --list
+
+# Force overwrite existing rules
+cursor-rules --force
+
+# Initialize with specific templates
 cursor-rules --init --templates cursor-rules,project-structure
 
 # Generate repomix with custom config file
@@ -110,6 +117,13 @@ When you create Cursor rules in your project:
 3. When you ask questions or request assistance, the AI follows the guidelines in your rules
 4. This results in more contextually appropriate and project-aware responses
 
+## Documentation
+
+For more detailed documentation, visit:
+- [Cursor Rules Guide](https://github.com/gabimoncha/cursor-rules-cli/blob/main/docs/CURSOR_RULES_GUIDE.md)
+- [CLI Commands](https://github.com/gabimoncha/cursor-rules-cli/blob/main/docs/CLI_COMMANDS.md)
+- [Contributing Guide](https://github.com/gabimoncha/cursor-rules-cli/blob/main/docs/CONTRIBUTING.md)
+
 ## Development
 
 To contribute to this project:
@@ -122,8 +136,9 @@ cd cursor-rules-cli
 # Install dependencies
 bun install
 
-# Run tests
-bun test
+# Run the CLI locally
+bun --cwd cli prepare
+bun --cwd cli prompt
 ```
 
 ## License

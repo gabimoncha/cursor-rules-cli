@@ -1,4 +1,5 @@
-# Cursor Rules CLI Future Enhancements (Made with AI, dogfooding `cursor-rules`)
+# Cursor Rules CLI Future Enhancements
+> Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
 This file tracks planned improvements and enhancements for the Cursor Rules CLI project.
 

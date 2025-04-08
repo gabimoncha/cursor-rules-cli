@@ -1,4 +1,5 @@
-# Contributing to Cursor Rules CLI (Made with AI, dogfooding `cursor-rules`)
+# Contributing to Cursor Rules CLI
+> Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
 Thank you for your interest in contributing to the Cursor Rules CLI project! This document provides guidelines and instructions for contributing to the project.
 

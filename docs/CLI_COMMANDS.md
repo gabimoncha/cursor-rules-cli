@@ -1,4 +1,5 @@
-# Cursor Rules CLI Commands (Made with AI, dogfooding `cursor-rules`)
+# Cursor Rules CLI Commands 
+> Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
 This document provides a comprehensive reference for all commands and options available in the Cursor Rules CLI.
 
