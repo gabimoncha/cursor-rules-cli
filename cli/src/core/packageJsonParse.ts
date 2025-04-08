@@ -24,7 +24,7 @@ const parsePackageJson = async (): Promise<{
   version: string;
 }> => {
   const dirName = url.fileURLToPath(new URL('.', import.meta.url));
-  const packageJsonPath = path.join(dirName, '..', '..', '..', 'package.json');
+  const packageJsonPath = path.join(dirName, '..', '..', 'package.json');
   const packageJsonFile = await fs.readFile(packageJsonPath, 'utf-8');
   const packageJson = JSON.parse(packageJsonFile);
   return packageJson;

@@ -1,20 +1,25 @@
-import { cancel, outro, intro, select, multiselect, group as groupPrompt } from '@clack/prompts';
+import { cancel, outro, select, multiselect, group as groupPrompt, isCancel, confirm, log } from '@clack/prompts';
+import { writeFile } from 'fs/promises';
+import path from 'path';
 import pc from 'picocolors';
-import { installRules } from '~/core/file/installRules.js';
+import { runCli as repomixAction } from 'repomix';
+import {runRepomixAction, writeRepomixConfig} from '~/cli/actions/repomixAction.js';
+import { installRules, logInstallResult } from '~/core/installRules.js';
+import { DEFAULT_REPOMIX_CONFIG, TEMPLATE_DIR } from '~/shared/constants.js';
+import { logger } from '~/shared/logger.js';
 
-export const runInitAction = async (rulesDir: string) => {
-  intro(pc.bold(`Cursor Rules`));
+const repomixInstructionsDir = path.join(TEMPLATE_DIR, 'repomix-instructions');
 
-  const yoloMode = await promptYoloMode();
+export const runInitAction = async (rulesDir: string, repomix: boolean = false) => {
+  const yoloMode = await confirmYoloMode();
+
+  if (isCancel(yoloMode)) {
+    cancel('Operation cancelled.');
+    process.exit(0);
+  }
 
   if (yoloMode) {
-    const result = await installRules(rulesDir, true);
-
-    if (result) {
-      outro(pc.green(`You're all set!`));
-    } else {
-      outro(pc.yellow(`Zero changes made.`));
-    }
+    await runYoloAction(rulesDir);
     return;
   }
 
@@ -22,28 +27,41 @@ export const runInitAction = async (rulesDir: string) => {
     rules: () => multiselect({
       message: 'Which rules would you like to add?',
       options: [
-        { value: 'cursor-rules', label: 'Cursor Rules', hint: 'Defines how Cursor should add new rules to your codebase' },
-        { value: 'task-list', label: 'Task List', hint: 'For creating and managing task lists' },
-        { value: 'project-structure', label: 'Project structure' },
+        { value: 'cursor-rules.md', label: 'Cursor Rules', hint: 'Defines how Cursor should add new rules to your codebase' },
+        { value: 'task-list.md', label: 'Task List', hint: 'For creating and managing task lists' },
+        { value: 'project-structure.md', label: 'Project structure' },
       ],
     }),
-    // repomixOptions: async () => {
-    //   const repomix = await promptRepomix();
+    runRepomix: async () => {
+      if (repomix) {
+        return true;
+      }
 
-    //   if (!repomix) return;
+      return confirm({
+        message: 'Run repomix over your codebase? (you can feed the output into the AI)',
+      });
+    },
+    repomixOptions: async ({results}) => {
+      if (!results.runRepomix) return [];
 
-    //   return multiselect({
-    //     message: 'Repomix options',
-    //     initialValues: ['--compress', '--remove-empty-lines', '--ignore ".cursor"'],
-    //     options: [
-    //       { value: '--compress', label: 'Perform code compression', hint: 'recommended' },
-    //       { value: '--remove-empty-lines', label: 'Remove empty lines', hint: 'recommended' },
-    //       { value: '--ignore ".cursor"', label: 'Ignore .cursor folder', hint: 'recommended' },
-    //       { value: '--remove-comments', label: 'Remove comments', hint: 'Good for useless comments' },
-    //       { value: '--include-empty-directories', label: 'Include empty directories' },
-    //     ],
-    //   });
-    // },
+      return multiselect({
+        message: 'Repomix options',
+        initialValues: ['compress', 'removeEmptyLines'],
+        options: [
+          { value: 'compress', label: 'Perform code compression', hint: 'recommended' },
+          { value: 'removeEmptyLines', label: 'Remove empty lines', hint: 'recommended' },
+          { value: 'removeComments', label: 'Remove comments', hint: 'Good for useless comments' },
+          { value: 'includeEmptyDirectories', label: 'Include empty directories' },
+        ],
+      });
+    },
+    saveRepomixConfig: async ({results}) => {
+      if (!results.runRepomix) return;
+
+      return confirm({
+        message: 'Save repomix config?',
+      });
+    },
     // TODO: For chaining repomix output inside the AI
     // wipRepomix: ({ results }) => {
     //   const rules = Array.isArray(results.rules) ? results.rules : [];
@@ -61,38 +79,71 @@ export const runInitAction = async (rulesDir: string) => {
     // },
   },
   {
-      // On Cancel callback that wraps the group
-      // So if the user cancels one of the prompts in the group this function will be called
-      onCancel: ({ results }) => {
-        cancel('Operation cancelled.');
-        process.exit(0);
-      },
+    // On Cancel callback that wraps the group
+    // So if the user cancels one of the prompts in the group this function will be called
+    onCancel: ({ results }) => {
+      cancel('Operation cancelled.');
+      process.exit(0);
+    },
+  });
+
+  logger.trace('selected rules:', group.rules);
+  logger.trace('run repomix:', group.runRepomix);
+  
+  if (!Array.isArray(group.repomixOptions)) {
+    logger.error('repomix options is not an array');
+    return;
+  }
+  
+  const formattedOptions = group.repomixOptions.reduce((acc, val) => {
+    return {
+      ...acc,
+      [val]: true
+    };
+  }, {});
+  
+  
+  logger.trace('repomix options:', formattedOptions);
+  logger.trace('save repomix config:', group.saveRepomixConfig);
+
+  if(group.saveRepomixConfig) {
+    const repomixConfig = {
+      ...DEFAULT_REPOMIX_CONFIG,
+      output: {
+        ...DEFAULT_REPOMIX_CONFIG.output,
+        ...formattedOptions
+      }
     }
-  );
 
-  console.log(JSON.stringify(group, null, 2));
+    await writeRepomixConfig(repomixConfig);
+  }
 
-  outro(pc.green(`You're all set!`));
+
+  if(group.runRepomix) {
+    await repomixAction([], process.cwd(), {
+      ...formattedOptions,
+      gitSortByChanges: false,
+      instructionFilePath: path.join(repomixInstructionsDir, 'instruction-project-structure.md'),
+    });
+  }
+
+  const result = await installRules(rulesDir, false, group.rules);
+  logInstallResult(result);
 };
 
 
-async function promptYoloMode() {
+async function confirmYoloMode() {
   return select({
     message: 'How do you want to add rules?.',
     options: [
-      { value: true, label: 'YOLO', hint: 'overwrite some rules, if they already exist' },
+      { value: true, label: 'YOLO', hint: 'overwrites already existing rules if filenames match' },
       { value: false, label: 'Custom' },
     ],
   });
 };
 
-
-async function promptRepomix() {
-  return select({
-    message: 'Run repomix over your codebase? (you can feed the output into the AI)',
-      options: [
-        { value: true, label: 'Sure, go ahead!' },
-        { value: false, label: 'No, add empty templates.' },
-    ],
-  });
-};
+export async function runYoloAction(rulesDir: string) {
+  const result = await installRules(rulesDir, true);
+  await runRepomixAction();
+  logInstallResult(result);
+}

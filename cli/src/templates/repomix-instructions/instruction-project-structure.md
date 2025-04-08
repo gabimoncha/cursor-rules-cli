@@ -1,4 +1,4 @@
-This file contains the entire codebase of library. Generate a comprehensive PROJECT_OVERVIEW.md of the project, including its main purpose, key features, directory structure and overall architecture. Use directory_structure from this file, to create a formatted tree structure of the project, with a short description for each folder.
+This file contains the entire codebase of library. Create or edit the current `.cursor/rules/project-structure.mdc` rules, to include the project's main purpose, key features, directory structure and overall architecture. Use `directory_structure` from this file, to create a formatted tree structure of the project, with a short description for each folder.
 
 Example PROJECT_STRUCTURE.md output:
 
@@ -46,3 +46,5 @@ The project is built with:
 - Enhance feature 2
 
 ```
+
+After editing the file, tell the user he might need to refresh the Explorer or restart Cursor to see the applied changes.

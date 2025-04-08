@@ -39,7 +39,7 @@ More detailed guidelines...
 
 ### Key Components
 
-- **Metadata**: Configuration parameters enclosed in `<metadata>` tags
+- **Metadata**: Configuration parameters enclosed in `---` tags at the top of the file
 - **Title**: Clear, descriptive title of the rule
 - **Description**: Brief explanation of the rule's purpose
 - **Content Sections**: Detailed information organized in sections
@@ -96,14 +96,31 @@ Point to example files in your codebase:
 
 ## Using Rules with Cursor CLI
 
+### Command Options
+
+```bash
+# Basic usage
+cursor-rules [options]
+
+# Available options
+--init          # Initialize Cursor rules in your project
+--repomix       # Generate repository overview XML file
+--list          # List all project rules
+--force, -f     # Overwrite existing rules
+--version, -V   # Display version number
+--verbose       # Show detailed output
+--quiet         # Reduce output to essentials
+--help, -h      # Display help information
+```
+
 ### Adding Rules with the CLI
 
 ```bash
 # Initialize default rules
 cursor-rules --init
 
-# Add specific rule templates
-cursor-rules --init --templates project-structure
+# Force overwrite of existing rules
+cursor-rules --force
 ```
 
 ### Customizing Rules

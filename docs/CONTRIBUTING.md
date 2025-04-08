@@ -81,13 +81,32 @@ cd cursor-rules-cli
 # Install dependencies
 bun install
 
-# Run tests
-bun test
+# Build the project
+bun prepare
 ```
 
 #### Project Structure
 
-Please see the [project structure documentation](../.cursor/rules/project-structure.mdc#directory-structure) for a detailed overview of the project's organization.
+The project follows this structure:
+
+```
+.
+├── cli/                     # Main CLI implementation package
+│   ├── bin/                   # CLI executable scripts
+│   ├── src/                   # Source code
+│   │   ├── cli/                 # CLI implementation components
+│   │   │   ├── actions/           # Command action handlers
+│   │   │   ├── cliRun.ts          # CLI runner functionality
+│   │   │   ├── types.ts           # CLI type definitions
+│   │   ├── core/                # Core business logic
+│   │   ├── shared/              # Shared utilities and constants
+│   │   ├── templates/           # Rule templates
+│   │   ├── index.ts             # Main entry point
+├── docs/                    # Documentation
+├── example/                 # Example project for testing
+```
+
+Please see the [project structure documentation](../.cursor/rules/project-structure.mdc) for a more detailed overview of the project's organization.
 
 ### Testing (WIP)
 

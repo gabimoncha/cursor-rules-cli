@@ -29,7 +29,9 @@
       "PROJECT_*.md",
       ".cursor",
       "lib",
-      "*.log"
+      "*.log",
+      "repomix*",
+      "*/repomix*"
     ]
   },
   "security": {

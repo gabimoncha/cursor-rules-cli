@@ -1,5 +1,5 @@
 import pc from 'picocolors';
-import { getVersion } from '~/core/file/packageJsonParse.js';
+import { getVersion } from '~/core/packageJsonParse.js';
 import { logger } from '~/shared/logger.js';
 
 export const runVersionAction = async (): Promise<void> => {

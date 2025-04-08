@@ -5,7 +5,8 @@
   "scripts": {
     "rules": "cursor-rules",
     "repomix": "cursor-rules --repomix",
-    "yolo": "cursor-rules --yolo"
+    "yolo": "cursor-rules --force",
+    "clean": "rm -rf .cursor repomix-output.xml repomix.config.json"
   },
   "dependencies": {
     "@gabimoncha/cursor-rules": "workspace:*"

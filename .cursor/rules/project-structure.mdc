@@ -23,21 +23,37 @@ The Cursor Rules CLI facilitates the creation, installation, and management of C
 
 ```tree
 .
-├── cli/                     # Main CLI package
-│   ├── bin/                   # CLI executable files
-│   ├── src/                   # Source code
-│   │   ├── cli/                 # CLI implementation 
-│   │   │   ├── actions/           # Command actions (init, version, etc.)
-│   │   ├── core/                # Core functionality
-│   │   │   ├── file/               # File system operations
-│   │   ├── shared/              # Shared utilities
-│   │   ├── templates/           # Rule templates
-│   │   │   ├── rules-default/     # Default rule templates
-├── example/                 # Example project for testing
-│   ├── parent_folder/         # Example directory structure
-│   │   ├── child_folder/        # Nested examples
-│   │   ├── other_child_folder/  # More nested examples
-│   ├── single_folder/         # Simple folder example
+├── cli/                          # Main CLI implementation package
+│   ├── bin/                        # CLI executable scripts
+│   ├── src/                        # Source code
+│   │   ├── cli/                      # CLI implementation components
+│   │   │   ├── actions/                # Command action handlers
+│   │   │   ├── cliRun.ts               # CLI runner functionality
+│   │   │   ├── types.ts                # CLI type definitions
+│   │   ├── core/                     # Core business logic
+│   │   │   ├── installRules.ts         # Rule installation functionality
+│   │   │   ├── packageJsonParse.ts     # Package.json parsing utilities
+│   │   ├── shared/                   # Shared utilities and constants
+│   │   │   ├── constants.ts            # Global constants
+│   │   │   ├── errorHandle.ts          # Error handling utilities
+│   │   │   ├── logger.ts               # Logging functionality
+│   │   ├── templates/                # Rule templates
+│   │   │   ├── rules-default/          # Default rule templates
+│   │   │       ├── cursor-rules.md       # Rules for cursor rules creation
+│   │   │       ├── project-structure.md  # Project structure guidelines
+│   │   │       ├── task-list.md          # Task management guidelines
+│   │   ├── index.ts                  # Main entry point
+├── docs/                         # Documentation
+│   ├── CLI_COMMANDS.md             # CLI command reference
+│   ├── CONTRIBUTING.md             # Contribution guidelines
+│   ├── CURSOR_RULES_GUIDE.md       # Comprehensive guide to cursor rules
+├── example/                      # Example project for testing
+│   ├── parent_folder/              # Example nested directory structure
+│   │   ├── child_folder/             # Child directory example
+│   │   ├── other_child_folder/       # Another child directory example
+│   ├── single_folder/              # Simple folder example
+│   ├── index.ts                    # Example entry point
+│   ├── package.json                # Example package configuration
 ```
 
 ## Default Templates
@@ -83,6 +99,12 @@ cursor-rules --init
 
 # Generate repomix file for AI analysis
 cursor-rules --repomix
+
+# List existing rules in the project
+cursor-rules --list
+
+# Force overwrite existing rules
+cursor-rules --force
 ```
 
 ## Technical implementation

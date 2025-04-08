@@ -1,51 +1,51 @@
 import process from 'node:process';
-import path, { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { Option, program } from 'commander';
 import pc from 'picocolors';
-import { runDefaultAction as repomixAction } from 'repomix';
 
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
-import { installRules } from '~/core/file/installRules.js';
-// import { runDefaultAction } from './actions/defaultAction';
-import { runInitAction } from './actions/initAction.js';
+import { installRules, logInstallResult } from '~/core/installRules.js';
+import { runInitAction, runYoloAction } from './actions/initAction.js';
 // import { runMcpAction } from './actions/mcpAction';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
-import { outro } from '@clack/prompts';
+import { intro } from '@clack/prompts';
+import { TEMPLATE_DIR } from '~/shared/constants.js';
+import { runRepomixAction } from '~/cli/actions/repomixAction.js';
+import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 
-const templateDir = path.join(dirname(fileURLToPath(import.meta.url)), '..', 'templates');
-const rulesDir = path.join(templateDir, 'rules-default');
-const repomixInstructionsDir = path.join(templateDir, 'repomix-instructions');
+const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
 const semanticSuggestionMap: Record<string, string[]> = {
   repo: ['--repomix'],
+  ls: ['--list'],
   debug: ['--verbose'],
   detailed: ['--verbose'],
   silent: ['--quiet'],
   mute: ['--quiet'],
+  yolo: ['--force'],
+  start: ['--init'],
 };
 
 export const run = async () => {
   try {
     program
-      .description('Cursor Rules - Add awesome IDE rules to your codebase')
-      // Basic Options
-      .option('-v, --version', 'show version information')
-      // Output Options
-      .option('--structure', 'generate project structure')
-      .option('--overview', 'generate project overview')
-      .option('--repomix', 'generate repomix output')
-      // Configuration Options
-      .option('--init', 'start the setup process')
-      // MCP
-      // .option('--mcp', 'run as a MCP server')
-      .addOption(new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet'))
-      .addOption(new Option('--quiet', 'disable all output to stdout').conflicts('verbose'))
-      .action(commanderActionEndpoint);
+    .description('Cursor Rules - Add awesome IDE rules to your codebase')
+    // Rules Options
+    .option('-f, --force', 'overwrites already existing rules if filenames match')
+    .option('--init', 'start the setup process')
+    .option('--repomix', 'generate repomix output with recommended settings')
+    // MCP
+    // .option('--mcp', 'run as a MCP server')
+    // Basic Options
+    .option('--list', 'list all rules')
+    .option('-v, --version', 'show version information')
+    .addOption(new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet'))
+    .addOption(new Option('--quiet', 'disable all output to stdout').conflicts('verbose'))
+    .action(runCli);
 
     // Custom error handling function
     const configOutput = program.configureOutput();
@@ -82,11 +82,7 @@ export const run = async () => {
   }
 };
 
-const commanderActionEndpoint = async (options: CliOptions = {}) => {
-  await runCli(options);
-};
-
-export const runCli = async (options: CliOptions) => {
+export const runCli = async (options: CliOptions = {}) => {
   // Set log level based on verbose and quiet flags
   if (options.quiet) {
     logger.setLogLevel(cursorRulesLogLevels.SILENT);
@@ -98,17 +94,8 @@ export const runCli = async (options: CliOptions) => {
 
   logger.trace('options:', options);
 
-  if (options.repomix) {
-    logger.log(pc.dim('\n📦 Repomixing\n'));
-    await repomixAction(['.'], process.cwd(), {
-      style: 'xml',
-      compress: true,
-      removeEmptyLines: true,
-      gitSortByChanges: false,
-      includeEmptyDirectories: true,
-      output: 'repomix-output.xml',
-      instructionFilePath: path.join(repomixInstructionsDir, 'instruction-project-structure.md'),
-    });
+  if (options.list) {
+    await runListRulesAction();
     return;
   }
 
@@ -117,9 +104,20 @@ export const runCli = async (options: CliOptions) => {
     return;
   }
 
-  if (options.init) {
-    await runInitAction(rulesDir);
+  intro(pc.bold(pc.green(`Cursor Rules`)));
+
+  if (options.force) {
+    await runYoloAction(rulesDir);
     return;
+  }
+  
+  if (options.init) {
+    await runInitAction(rulesDir, options.repomix);
+    return;
+  }
+
+  if (options.repomix) {
+    await runRepomixAction();
   }
 
   // if (options.mcp) {
@@ -127,10 +125,5 @@ export const runCli = async (options: CliOptions) => {
   // }
 
   const result = await installRules(rulesDir);
-
-  if (result) {
-    outro(pc.green(`You're all set!`));
-  } else {
-    outro(pc.yellow(`Zero changes made.`));
-  }
+  logInstallResult(result);
 };

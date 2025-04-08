@@ -16,11 +16,11 @@
     "example"
   ],
   "scripts": {
-    "repomix": "rimraf repomix-output.xml && repomix --config repomix.config.json",
-    "prepublishOnly": "bun --cwd cli prepare",
-    "test:rules": "cd example && bun rules",
-    "test:repomix": "cd example && bun repomix",
-    "test:yolo": "cd example && bun yolo"
+    "repomix": "repomix --config repomix.config.json",
+    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
+    "test:rules": "bun -cwd example rules",
+    "test:repomix": "bun -cwd example repomix",
+    "test:yolo": "bun -cwd example yolo"
   },
   "devDependencies": {
     "@types/bun": "^1.2.8",
