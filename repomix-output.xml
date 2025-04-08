@@ -27,6 +27,8 @@ The content is organized as follows:
   between different files in the repository.
 - Be aware that this file may contain sensitive information. Handle it with
   the same level of security as you would the original repository.
+
+- Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
 </usage_guidelines>
 
 <notes>
@@ -73,6 +75,7 @@ cli/
         task-list.md
     index.ts
   package.json
+  README.md
   tsconfig.build.json
   tsconfig.json
 example/
@@ -467,7 +470,7 @@ Should become:
 {
   "name": "@gabimoncha/cursor-rules",
   "description": "A CLI tool to add Cursor rules to a project",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -537,6 +540,56 @@ Should become:
 }
 </file>
 
+<file path="cli/README.md">
+# cursor-rules
+
+## Installation
+
+### - global install
+#### bun
+```bash
+bun add -g @gabimoncha/cursor-rules
+```
+#### yarn
+```bash
+yarn global add @gabimoncha/cursor-rules
+```
+#### npm
+```bash
+npm install -g @gabimoncha/cursor-rules
+```
+
+### - project install
+#### bun
+```bash
+bun add -d @gabimoncha/cursor-rules
+```
+#### yarn
+```bash
+yarn add -D @gabimoncha/cursor-rules
+```
+#### npm
+```bash
+npm install --save-dev @gabimoncha/cursor-rules
+```
+
+## Usage
+
+### - init cursor rules
+```bash
+cursor-rules --init
+```
+
+### - generate repomix file to be used with AI
+```bash
+cursor-rules --repomix
+```
+
+## Acknowledgements
+
+Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
+</file>
+
 <file path="cli/tsconfig.build.json">
 {
   "extends": "./tsconfig.json",
@@ -573,7 +626,7 @@ Should become:
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["src/cli/actions/defaultAction.ts", "src/get-directory-structure.ts"]
+  "exclude": ["src/cli/actions/defaultAction.ts"]
 }
 </file>
 
@@ -596,8 +649,8 @@ Should become:
 <file path="example/package.json">
 {
   "name": "example",
-  "private": true,
   "version": "0.0.1",
+  "private": true,
   "scripts": {
     "rules": "cursor-rules",
     "repomix": "cursor-rules --repomix",
@@ -765,7 +818,8 @@ Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
     "git": {
       "sortByChanges": false,
       "sortByChangesMaxCommits": 100
-    }
+    },
+    "instructionFilePath": "./cli/src/templates/repomix-instructions/instruction-project-structure.md"
   },
   "include": [],
   "ignore": {
@@ -792,3 +846,53 @@ Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
 </file>
 
 </files>
+
+<instruction>
+This file contains the entire codebase of library. Generate a comprehensive PROJECT_OVERVIEW.md of the project, including its main purpose, key features, directory structure and overall architecture. Use directory_structure from this file, to create a formatted tree structure of the project, with a short description for each folder.
+
+Example PROJECT_STRUCTURE.md output:
+
+```markdown
+---
+description: Project structure and file organization guidelines
+globs: 
+alwaysApply: false
+---
+# Project structure
+
+Short description of the project
+
+## Purpose
+
+The purpose of the project
+
+## Key features
+
+- Feature 1: do something
+- Feature 2: do something else
+
+## Directory structure
+
+```tree
+.
+├── parent_folder/             # this is the parent_folder description
+│   ├── child_folder/               # this is the child_folder description
+│   └── other_child_folder/         # this is the other_child_folder description
+└── single_folder/             # this is the single folder description
+```
+
+## Usage
+
+Run command 
+
+## Technical implementation
+
+The project is built with:
+- TypeScript: for type-safe code
+
+## Future Enhancements
+
+- Add support for feature 3
+- Enhance feature 2
+```
+</instruction>

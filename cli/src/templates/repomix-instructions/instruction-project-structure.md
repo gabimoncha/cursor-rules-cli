@@ -8,7 +8,7 @@ description: Project structure and file organization guidelines
 globs: 
 alwaysApply: false
 ---
-# Project structure
+# Project name
 
 Short description of the project
 
@@ -44,4 +44,5 @@ The project is built with:
 
 - Add support for feature 3
 - Enhance feature 2
+
 ```

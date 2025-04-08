@@ -14,7 +14,8 @@
     "git": {
       "sortByChanges": false,
       "sortByChangesMaxCommits": 100
-    }
+    },
+    "instructionFilePath": "./cli/src/templates/repomix-instructions/instruction-project-structure.md"
   },
   "include": [],
   "ignore": {
