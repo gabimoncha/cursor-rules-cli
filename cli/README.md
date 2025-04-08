@@ -9,31 +9,33 @@ Cursor rules are markdown files with structured metadata that provide AI with in
 
 ## Installation
 
-### - global install
-#### bun
+### Global Installation
+
 ```bash
+# Using bun
 bun add -g @gabimoncha/cursor-rules
 ```
-#### yarn
 ```bash
+# Using yarn
 yarn global add @gabimoncha/cursor-rules
 ```
-#### npm
 ```bash
+# Using npm
 npm install -g @gabimoncha/cursor-rules
 ```
 
-### - project install
-#### bun
+### Project Installation
+
 ```bash
+# Using bun
 bun add -d @gabimoncha/cursor-rules
 ```
-#### yarn
 ```bash
+# Using yarn
 yarn add -D @gabimoncha/cursor-rules
 ```
-#### npm
 ```bash
+# Using npm
 npm install --save-dev @gabimoncha/cursor-rules
 ```
 
@@ -54,22 +56,35 @@ This will:
 cursor-rules --repomix
 ```
 
-### - available commands
+### Available Commands
+
+```bash
+# Start CLI app
+cursor-rules --init
+```
+```bash
+# Generate repomix with custom config file
+cursor-rules --repomix
+```
+```bash
+# Start CLI and confirm repomix
+cursor-rules --init --repomix
+```
+```bash
+# Force overwrite existing rules
+cursor-rules --force
+```
+```bash
+# List existing rules
+cursor-rules --list
+```
+```bash
+# Display the current version
+cursor-rules --version
+```
 ```bash
 # Show help information
 cursor-rules --help
-
-# Display the current version
-cursor-rules --version
-
-# List existing rules
-cursor-rules --list
-
-# Force overwrite existing rules
-cursor-rules --force
-
-# Initialize with verbose output
-cursor-rules --init --verbose
 ```
 
 ## Default Rule Templates

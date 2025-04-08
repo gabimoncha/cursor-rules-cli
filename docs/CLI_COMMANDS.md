@@ -27,23 +27,32 @@ cursor-rules [options]
 ## Command Examples
 
 ```bash
-# Initialize cursor rules
+# Start CLI app
 cursor-rules --init
-
-# Generate repomix file
+```
+```bash
+# Generate repomix with custom config file
 cursor-rules --repomix
-
-# Initialize cursor rules and confirm running repomix
+```
+```bash
+# Start CLI and confirm repomix
 cursor-rules --init --repomix
-
-# List existing rules
-cursor-rules --list
-
+```
+```bash
 # Force overwrite existing rules
 cursor-rules --force
-
-# Show version
+```
+```bash
+# List existing rules
+cursor-rules --list
+```
+```bash
+# Display the current version
 cursor-rules --version
+```
+```bash
+# Show help information
+cursor-rules --help
 ```
 
 ## Exit Codes

@@ -29,10 +29,12 @@ By adding Cursor rules to your project, you enhance the AI's capability to provi
 ```bash
 # Using bun
 bun add -g @gabimoncha/cursor-rules
-
+```
+```bash
 # Using yarn
 yarn global add @gabimoncha/cursor-rules
-
+```
+```bash
 # Using npm
 npm install -g @gabimoncha/cursor-rules
 ```
@@ -42,10 +44,12 @@ npm install -g @gabimoncha/cursor-rules
 ```bash
 # Using bun
 bun add -d @gabimoncha/cursor-rules
-
+```
+```bash
 # Using yarn
 yarn add -D @gabimoncha/cursor-rules
-
+```
+```bash
 # Using npm
 npm install --save-dev @gabimoncha/cursor-rules
 ```
@@ -76,23 +80,32 @@ cursor-rules --repomix
 ### Available Commands
 
 ```bash
-# Show help information
-cursor-rules --help
-
-# Display the current version
-cursor-rules --version
-
-# List existing rules
-cursor-rules --list
-
+# Start CLI app
+cursor-rules --init
+```
+```bash
+# Generate repomix with custom config file
+cursor-rules --repomix
+```
+```bash
+# Start CLI and confirm repomix
+cursor-rules --init --repomix
+```
+```bash
 # Force overwrite existing rules
 cursor-rules --force
-
-# Initialize with specific templates
-cursor-rules --init --templates cursor-rules,project-structure
-
-# Generate repomix with custom config file
-cursor-rules --repomix --config ./my-repomix-config.json
+```
+```bash
+# List existing rules
+cursor-rules --list
+```
+```bash
+# Display the current version
+cursor-rules --version
+```
+```bash
+# Show help information
+cursor-rules --help
 ```
 
 ## Default Rule Templates
@@ -102,11 +115,11 @@ The CLI provides three default rule templates:
 ### 1. cursor-rules.md
 Guidelines for adding and organizing AI rules in your project.
 
-### 2. project-structure.md
-Overview of your project's structure, organization, and key components.
-
-### 3. task-list.md
+### 2. task-list.md
 Framework for tracking project progress with markdown task lists.
+
+### 3. project-structure.md
+Empty template for your project's structure. Can be updated by AI after running repomix output default instructions
 
 ## How Cursor Rules Work
 
