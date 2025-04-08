@@ -18,6 +18,7 @@
   "scripts": {
     "repomix": "repomix --config repomix.config.json",
     "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
+    "release": "bun publish --cwd cli --otp",
     "test:rules": "bun -cwd example rules",
     "test:repomix": "bun -cwd example repomix",
     "test:yolo": "bun -cwd example yolo"

@@ -1,7 +1,5 @@
-import { cancel, outro, select, multiselect, group as groupPrompt, isCancel, confirm, log } from '@clack/prompts';
-import { writeFile } from 'fs/promises';
+import { cancel, select, multiselect, group as groupPrompt, isCancel, confirm } from '@clack/prompts';
 import path from 'path';
-import pc from 'picocolors';
 import { runCli as repomixAction } from 'repomix';
 import {runRepomixAction, writeRepomixConfig} from '~/cli/actions/repomixAction.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
@@ -23,6 +21,8 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
     return;
   }
 
+  let result = false;
+
   const group = await groupPrompt({
     rules: () => multiselect({
       message: 'Which rules would you like to add?',
@@ -31,14 +31,25 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
         { value: 'task-list.md', label: 'Task List', hint: 'For creating and managing task lists' },
         { value: 'project-structure.md', label: 'Project structure' },
       ],
+      required: false,
     }),
+    install: async ({ results }) => {
+      if (results?.rules && results.rules.length > 0) {
+        result = await installRules(rulesDir, false, results.rules);
+      }
+      return;
+    },
     runRepomix: async () => {
       if (repomix) {
         return true;
       }
 
-      return confirm({
-        message: 'Run repomix over your codebase? (you can feed the output into the AI)',
+      return select({
+        message: 'Pack codebase (with repomix) into an AI-friendly file?',
+        options: [
+          { value: true, label: 'Yes', hint: 'recommended' },
+          { value: false, label: 'No', hint: 'you can run repomix later' },
+        ],
       });
     },
     repomixOptions: async ({results}) => {
@@ -56,7 +67,7 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
       });
     },
     saveRepomixConfig: async ({results}) => {
-      if (!results.runRepomix) return;
+      if (!results.runRepomix) return false;
 
       return confirm({
         message: 'Save repomix config?',
@@ -127,7 +138,6 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
     });
   }
 
-  const result = await installRules(rulesDir, false, group.rules);
   logInstallResult(result);
 };
 
