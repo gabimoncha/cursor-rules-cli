@@ -120,7 +120,7 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
 
 
   if(group.runRepomix) {
-    await repomixAction([], process.cwd(), {
+    await repomixAction(['.'], process.cwd(), {
       ...formattedOptions,
       gitSortByChanges: false,
       instructionFilePath: path.join(repomixInstructionsDir, 'instruction-project-structure.md'),
