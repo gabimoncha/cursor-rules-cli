@@ -1,52 +1,32 @@
 import { cancel, outro, intro, select, multiselect, group as groupPrompt } from '@clack/prompts';
+import pc from 'picocolors';
+import { installRules } from '~/core/file/installRules.js';
 
-export const runInitAction = async () => {
-  intro(`Cursor Rules`);
+export const runInitAction = async (templateDir: string) => {
+  intro(pc.bold(`Cursor Rules`));
+
+  const yoloMode = await promptYoloMode();
+
+  if (yoloMode) {
+    const result = await installRules(templateDir, true);
+
+    if (result) {
+      outro(pc.green(`You're all set!`));
+    } else {
+      outro(pc.yellow(`Zero changes made.`));
+    }
+    return;
+  }
 
   const group = await groupPrompt({
-    how: () => select({ 
-      message: 'How do you want to add rules?.',
+    rules: () => multiselect({
+      message: 'Which rules would you like to add?',
       options: [
-        { value: 'yolo', label: 'YOLO', hint: 'recommended' },
-        { value: 'custom', label: 'Custom', hint: 'Adds selected rules' },
+        { value: 'cursor-rules', label: 'Cursor Rules', hint: 'Defines how Cursor should add new rules to your codebase' },
+        { value: 'task-list', label: 'Task List', hint: 'For creating and managing task lists' },
+        { value: 'project-structure', label: 'Project structure' },
       ],
     }),
-    rules: ({ results }) => {
-      if (results.how === 'yolo') {
-        return;
-      }
-
-      return multiselect({
-        message: 'Which rules would you like to add?',
-        options: [
-          { value: 'cursor-rules', label: 'Cursor Rules', hint: 'Defines how Cursor should add new rules to your codebase' },
-          { value: 'task-list', label: 'Task List', hint: 'For creating and managing task lists' },
-          { value: 'project-overview', label: 'Project Overview', hint: 'Empty templates for your project overview' },
-        ],
-      });
-    },
-    repomix: () => select({
-        message: 'Run repomix over your codebase? (you can feed the output into the AI)',
-        options: [
-          { value: true, label: 'Sure, go ahead!' },
-          { value: false, label: 'No, add empty templates.' },
-        ],
-    }),
-    repomixOptions: ({ results }) => {
-      if (!results.repomix) return;
-
-      return multiselect({
-        message: 'Repomix options',
-        initialValues: ['--compress', '--remove-empty-lines'],
-        options: [
-          { value: '--compress', label: 'Perform code compression', hint: 'recommended' },
-          { value: '--remove-empty-lines', label: 'Remove empty lines', hint: 'recommended' },
-          { value: '--remove-comments', label: 'Remove comments', hint: 'Good for useless comments' },
-          { value: '--include-empty-directories', label: 'Include empty directories' },
-          { value: '--no-git-sort-by-changes', label: 'Disable sorting files by git change count' },
-        ],
-      });
-    },
   },
   {
       // On Cancel callback that wraps the group
@@ -60,5 +40,27 @@ export const runInitAction = async () => {
 
   console.log(JSON.stringify(group, null, 2));
 
-  outro(`You're all set!`);
+  outro(pc.green(`You're all set!`));
+};
+
+
+async function promptYoloMode() {
+  return select({
+    message: 'How do you want to add rules?.',
+    options: [
+      { value: true, label: 'YOLO', hint: 'overwrite some rules, if they already exist' },
+      { value: false, label: 'Custom' },
+    ],
+  });
+};
+
+
+async function promptRepomix() {
+  return select({
+    message: 'Run repomix over your codebase? (you can feed the output into the AI)',
+      options: [
+        { value: true, label: 'Sure, go ahead!' },
+        { value: false, label: 'No, add empty templates.' },
+    ],
+  });
 };

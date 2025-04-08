@@ -34,13 +34,12 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Files matching these patterns are excluded: src/wip, src/templates/repomix-instructions, src/actions/defaultAction.ts, src/add-repomix-server.ts, src/get-directory-structure.ts, directory-structure.md, PROJECT_*.md, .cursor, example
+- Files matching these patterns are excluded: src/wip, src/templates/repomix-instructions, src/actions/defaultAction.ts, src/add-repomix-server.ts, directory-structure.md, PROJECT_*.md, .cursor, example
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Code comments have been removed from supported file types
 - Empty lines have been removed from all files
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
-- Files are sorted by Git change count (files with more changes are at the bottom)
 </notes>
 
 <additional_info>
@@ -62,8 +61,8 @@ src/
     types.ts
   core/
     file/
+      installRules.ts
       packageJsonParse.ts
-      rulesFinder.ts
   shared/
     constants.ts
     errorHandle.ts
@@ -71,7 +70,6 @@ src/
   templates/
     rules-default/
       cursor-rules.md
-      project-overview.md
       project-structure.md
       task-list.md
   index.ts
@@ -86,51 +84,6 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/cli/actions/defaultAction.ts">
-import path from 'node:path';
-import { loadFileConfig, mergeConfigs } from '../../config/configLoad.js';
-import {
-  type RepomixConfigCli,
-  type RepomixConfigFile,
-  type RepomixConfigMerged,
-  type RepomixOutputStyle,
-  repomixConfigCliSchema,
-} from '../../config/configSchema.js';
-import { type PackResult, pack } from '../../core/packager.js';
-import { rethrowValidationErrorIfZodError } from '../../shared/errorHandle.js';
-import { logger } from '../../shared/logger.js';
-import { printCompletion, printSecurityCheck, printSummary, printTopFiles } from '../cliPrint.js';
-import { Spinner } from '../cliSpinner.js';
-import type { CliOptions } from '../types.js';
-import { runMigrationAction } from './migrationAction.js';
-export interface DefaultActionRunnerResult {
-  packResult: PackResult;
-  config: RepomixConfigMerged;
-}
-export const runDefaultAction = async (
-  directories: string[],
-  cwd: string,
-  cliOptions: CliOptions,
-): Promise<DefaultActionRunnerResult> =>
-/**
- * Builds CLI configuration from command-line options.
- *
- * Note: Due to Commander.js behavior with --no-* flags:
- * - When --no-* flags are used (e.g., --no-file-summary), the options explicitly become false
- * - When no flag is specified, Commander defaults to true (e.g., options.fileSummary === true)
- * - For --no-* flags, we only apply the setting when it's explicitly false to respect config file values
- * - This allows the config file to maintain control unless explicitly overridden by CLI
- */
-export const buildCliConfig = (options: CliOptions): RepomixConfigCli =>
-</file>
-
-<file path="src/core/file/rulesFinder.ts">
-import path from 'node:path';
-⋮----
-import { logger } from '~/shared/logger.js';
-const parsePackageJson = async (): Promise<
-</file>
 
 <file path="bin/cursor-rules.cjs">
 const [major] = nodeVersion.split('.').map(Number);
@@ -163,9 +116,41 @@ console.error('Fatal Error:', {
 console.error('Fatal Error:', error);
 </file>
 
+<file path="src/cli/actions/defaultAction.ts">
+import path from 'node:path';
+import { loadFileConfig, mergeConfigs } from '../../config/configLoad.js';
+import {
+  type RepomixConfigCli,
+  type RepomixConfigFile,
+  type RepomixConfigMerged,
+  type RepomixOutputStyle,
+  repomixConfigCliSchema,
+} from '../../config/configSchema.js';
+import { type PackResult, pack } from '../../core/packager.js';
+import { rethrowValidationErrorIfZodError } from '../../shared/errorHandle.js';
+import { logger } from '../../shared/logger.js';
+import { printCompletion, printSecurityCheck, printSummary, printTopFiles } from '../cliPrint.js';
+import { Spinner } from '../cliSpinner.js';
+import type { CliOptions } from '../types.js';
+import { runMigrationAction } from './migrationAction.js';
+export interface DefaultActionRunnerResult {
+  packResult: PackResult;
+  config: RepomixConfigMerged;
+}
+export const runDefaultAction = async (
+  directories: string[],
+  cwd: string,
+  cliOptions: CliOptions,
+): Promise<DefaultActionRunnerResult> =>
+</file>
+
 <file path="src/cli/actions/initAction.ts">
 import { cancel, outro, intro, select, multiselect, group as groupPrompt } from '@clack/prompts';
-export const runInitAction = async () =>
+import pc from 'picocolors';
+import { installRules } from '~/core/file/installRules.js';
+export const runInitAction = async (templateDir: string) =>
+async function promptYoloMode()
+async function promptRepomix()
 </file>
 
 <file path="src/cli/actions/versionAction.ts">
@@ -177,14 +162,18 @@ export const runVersionAction = async (): Promise<void> =>
 
 <file path="src/cli/cliRun.ts">
 import process from 'node:process';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Option, program } from 'commander';
 import pc from 'picocolors';
 import { runDefaultAction as repomixAction } from 'repomix';
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
+import { installRules } from '~/core/file/installRules.js';
 import { runInitAction } from './actions/initAction.js';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
+import {outro} from '@clack/prompts';
 ⋮----
 export const run = async () =>
 ⋮----
@@ -211,6 +200,14 @@ export interface CliOptions extends OptionValues {
   verbose?: boolean;
   quiet?: boolean;
 }
+</file>
+
+<file path="src/core/file/installRules.ts">
+import fs from "node:fs/promises";
+import path from "node:path";
+import { select } from "@clack/prompts";
+import { logger } from "~/shared/logger.js";
+export async function installRules(templateDir: string, overwrite: boolean = false): Promise<boolean>
 </file>
 
 <file path="src/core/file/packageJsonParse.ts">
@@ -336,15 +333,6 @@ function badExample() {
 ````
 </file>
 
-<file path="src/templates/rules-default/project-overview.md">
----
-description: Project overview
-globs: 
-alwaysApply: true
----
-## Project Overview
-</file>
-
 <file path="src/templates/rules-default/project-structure.md">
 ---
 description: Project structure and file organization guidelines
@@ -464,45 +452,6 @@ Should become:
 
 </file>
 
-<file path=".tool-versions">
-bun 1.2.8
-yarn 1.22.22
-</file>
-
-<file path="LICENSE">
-MIT License
-
-Copyright (c) 2025 gabimoncha
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-</file>
-
-<file path="tsconfig.build.json">
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "./src"
-  },
-  "include": ["./src/**/*"]
-}
-</file>
-
 <file path=".gitignore">
 # dependencies (bun install)
 node_modules
@@ -553,6 +502,35 @@ coverage/
 .yarn/
 </file>
 
+<file path=".tool-versions">
+bun 1.2.8
+yarn 1.22.22
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2025 gabimoncha
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
 <file path="package.json">
 {
   "name": "cursor-rules-cli",
@@ -560,6 +538,7 @@ coverage/
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "license": "MIT",
   "exports": {
     ".": {
       "import": {
@@ -576,15 +555,16 @@ coverage/
   "bin": "./bin/cursor-rules.cjs",
   "scripts": {
     "clean": "rimraf lib",
-    "prepare": "rimraf lib && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json",
-    "cursor-rules": "node --trace-warnings bin/cursor-rules.cjs",
-    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,src/get-directory-structure.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md"
+    "prepare": "bun clean && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json && bun copy-templates",
+    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/",
+    "install-rules": "bun prepare && node --trace-warnings bin/cursor-rules.cjs",
+    "prompt": "bun prepare && node --trace-warnings bin/cursor-rules.cjs --init",
+    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md --no-git-sort-by-changes"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "commander": "^13.1.0",
     "repomix": "^0.3.1",
-    "tree-node-cli": "^1.6.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -620,6 +600,16 @@ This project was created using `bun init` in bun v1.2.8. [Bun](https://bun.sh) i
 Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
 
 Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
+</file>
+
+<file path="tsconfig.build.json">
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src"
+  },
+  "include": ["./src/**/*"]
+}
 </file>
 
 <file path="tsconfig.json">

@@ -1,15 +1,22 @@
 import process from 'node:process';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Option, program } from 'commander';
 import pc from 'picocolors';
 import { runDefaultAction as repomixAction } from 'repomix';
 
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
+import { installRules } from '~/core/file/installRules.js';
 // import { runDefaultAction } from './actions/defaultAction';
 import { runInitAction } from './actions/initAction.js';
 // import { runMcpAction } from './actions/mcpAction';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
+import { outro } from '@clack/prompts';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const templateDir = path.join(__dirname, '..', 'templates', 'rules-default');
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
@@ -32,7 +39,7 @@ export const run = async () => {
       .option('--overview', 'generate project overview')
       .option('--repomix', 'generate repomix output')
       // Configuration Options
-      .option('--init', 'add default rules to your codebase')
+      .option('--init', 'start the setup process')
       // MCP
       // .option('--mcp', 'run as a MCP server')
       .addOption(new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet'))
@@ -96,6 +103,7 @@ export const runCli = async (options: CliOptions) => {
       style: 'xml',
       compress: true,
       removeEmptyLines: true,
+      gitSortByChanges: false,
       includeEmptyDirectories: true,
       output: 'repomix-output.xml',
       instructionFilePath: './src/templates/repomix-instructions/instruction-project-structure.md',
@@ -108,13 +116,20 @@ export const runCli = async (options: CliOptions) => {
     return;
   }
 
-  // if (options.init) {
-    return await runInitAction();
-  // }
+  if (options.init) {
+    await runInitAction(templateDir);
+    return;
+  }
 
   // if (options.mcp) {
   //   return await runMcpAction();
   // }
 
-  // return await runDefaultAction(directories, cwd, options);
+  const result = await installRules(templateDir);
+
+  if (result) {
+    outro(pc.green(`You're all set!`));
+  } else {
+    outro(pc.yellow(`Zero changes made.`));
+  }
 };

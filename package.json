@@ -4,6 +4,7 @@
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "license": "MIT",
   "exports": {
     ".": {
       "import": {
@@ -20,15 +21,16 @@
   "bin": "./bin/cursor-rules.cjs",
   "scripts": {
     "clean": "rimraf lib",
-    "prepare": "rimraf lib && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json",
-    "cursor-rules": "node --trace-warnings bin/cursor-rules.cjs",
-    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,src/get-directory-structure.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md"
+    "prepare": "bun clean && tsc -p tsconfig.build.json --sourceMap --declaration && tsc-alias -p tsconfig.build.json && bun copy-templates",
+    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/",
+    "install-rules": "bun prepare && node --trace-warnings bin/cursor-rules.cjs",
+    "prompt": "bun prepare && node --trace-warnings bin/cursor-rules.cjs --init",
+    "repomix": "rimraf repomix-output.xml && bunx repomix@latest --output repomix-output.xml --compress --remove-empty-lines --remove-comments --ignore 'src/wip,src/templates/repomix-instructions,src/actions/defaultAction.ts,src/add-repomix-server.ts,directory-structure.md,PROJECT_*.md,.cursor,example' --instruction-file-path src/templates/repomix-instructions/instruction-project-structure.md --no-git-sort-by-changes"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "commander": "^13.1.0",
     "repomix": "^0.3.1",
-    "tree-node-cli": "^1.6.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
