@@ -1,7 +1,7 @@
 {
   "name": "@gabimoncha/cursor-rules",
   "description": "A CLI tool to add Cursor rules to a project",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -28,9 +28,8 @@
   },
   "scripts": {
     "clean": "rimraf lib",
-    "prepare": "bun clean && tsc -p tsconfig.build.json --sourceMap --declaration && bunx tsc-alias -p tsconfig.build.json && bun copy-templates",
-    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/",
-    "prompt": "bun prepare && node --trace-warnings bin/cursor-rules.js --init"
+    "prepare": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun copy-templates",
+    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/"
   },
   "keywords": [
     "repository",

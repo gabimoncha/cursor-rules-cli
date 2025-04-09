@@ -3,9 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "rules": "cursor-rules",
-    "repomix": "cursor-rules --repomix",
-    "yolo": "cursor-rules --force",
+    "rules:dev": "bun run --bun cursor-rules",
+    "rules:lib": "cursor-rules",
     "clean": "rm -rf .cursor repomix-output.xml repomix.config.json"
   },
   "dependencies": {

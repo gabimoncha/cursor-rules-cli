@@ -1,16 +1,14 @@
 import process from 'node:process';
 import path from 'node:path';
-import { Option, program } from 'commander';
+import { Command, CommandOptions, Option } from 'commander';
 import pc from 'picocolors';
-
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
-import { runInitAction, runYoloAction } from './actions/initAction.js';
+import { runInitAction, runInitForceAction } from './actions/initAction.js';
 // import { runMcpAction } from './actions/mcpAction';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
-import { intro } from '@clack/prompts';
 import { TEMPLATE_DIR } from '~/shared/constants.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
@@ -20,32 +18,60 @@ const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
 const semanticSuggestionMap: Record<string, string[]> = {
+  ls: ['list'],
+  start: ['init'],
+  yolo: ['--force'],
   repo: ['--repomix'],
-  ls: ['--list'],
+  compress: ['--repomix'],
+  override: ['--overwrite'],
   debug: ['--verbose'],
   detailed: ['--verbose'],
   silent: ['--quiet'],
   mute: ['--quiet'],
-  yolo: ['--force'],
-  start: ['--init'],
 };
+
+class RootCommand extends Command {
+  createCommand(name: string) {
+    const cmd = new Command(name);
+    cmd.description('Cursor Rules - Add awesome IDE rules to your codebase');
+    // Basic Options
+    cmd.addOption(new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet'));
+    cmd.addOption(new Option('-q, --quiet', 'disable all output to stdout').conflicts('verbose'));
+    return cmd;
+  }
+}
+
+export const program = new RootCommand();
 
 export const run = async () => {
   try {
     program
-    .description('Cursor Rules - Add awesome IDE rules to your codebase')
+    .option('-v, --version', 'show version information')
+    .action(commanderActionEndpoint);
+
+    program
+    .command('init')
+    .description('start the setup process')
     // Rules Options
     .option('-f, --force', 'overwrites already existing rules if filenames match')
-    .option('--init', 'start the setup process')
-    .option('--repomix', 'generate repomix output with recommended settings')
-    // MCP
-    // .option('--mcp', 'run as a MCP server')
-    // Basic Options
-    .option('--list', 'list all rules')
-    .option('-v, --version', 'show version information')
-    .addOption(new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet'))
-    .addOption(new Option('--quiet', 'disable all output to stdout').conflicts('verbose'))
-    .action(runCli);
+    .option('-r, --repomix', 'generate repomix output with recommended settings')
+    .option('-o, --overwrite', 'overwrite existing rules')
+    .action(commanderActionEndpoint);
+
+    program
+    .command('list')
+    .description('list all rules')
+    .action(commanderActionEndpoint);
+
+    program
+    .command('repomix')
+    .description('generate repomix output with recommended settings')
+    .action(commanderActionEndpoint);
+
+    // program
+    // .command('mcp')
+    // .description('run as a MCP server')
+    // .action(runCli);
 
     // Custom error handling function
     const configOutput = program.configureOutput();
@@ -82,8 +108,7 @@ export const run = async () => {
   }
 };
 
-export const runCli = async (options: CliOptions = {}) => {
-  // Set log level based on verbose and quiet flags
+const commanderActionEndpoint = async (options: CliOptions = {}, command: Command) => {
   if (options.quiet) {
     logger.setLogLevel(cursorRulesLogLevels.SILENT);
   } else if (options.verbose) {
@@ -92,38 +117,50 @@ export const runCli = async (options: CliOptions = {}) => {
     logger.setLogLevel(cursorRulesLogLevels.INFO);
   }
 
-  logger.trace('options:', options);
+  await runCli(options, command);
+};
 
-  if (options.list) {
-    await runListRulesAction();
-    return;
-  }
-
+export const runCli = async (options: CliOptions = {}, command: Command) => {
   if (options.version) {
     await runVersionAction();
     return;
   }
 
-  intro(pc.bold(pc.green(`Cursor Rules`)));
+  const cmd = command.name();
+
+  logger.trace('options:', options);
+  logger.trace('command:', cmd);
+
+  // List command
+
+  if (cmd === 'list') {
+    await runListRulesAction();
+    return;
+  }
+
+  // Init command
 
   if (options.force) {
-    await runYoloAction(rulesDir);
+    await runInitForceAction(options);
     return;
   }
+
+  if (cmd === 'init') {
+    await runInitAction(options);
+    return;
+  }
+
+  if (cmd === 'repomix') {
+    await runRepomixAction(options.quiet);
+    return;
+  }
+
+  // MCP command (not implemented yet)
   
-  if (options.init) {
-    await runInitAction(rulesDir, options.repomix);
-    return;
-  }
-
-  if (options.repomix) {
-    await runRepomixAction();
-  }
-
   // if (options.mcp) {
   //   return await runMcpAction();
   // }
 
-  const result = await installRules(rulesDir);
-  logInstallResult(result);
+  logger.log(pc.bold(pc.green('\nCursor Rules')), 'a CLI for adding awesome IDE rules to your codebase\n');
+  command.outputHelp();
 };

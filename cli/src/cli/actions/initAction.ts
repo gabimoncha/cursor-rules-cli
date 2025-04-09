@@ -1,23 +1,21 @@
 import { cancel, select, multiselect, group as groupPrompt, isCancel, confirm } from '@clack/prompts';
 import path from 'path';
-import { runCli as repomixAction } from 'repomix';
-import {runRepomixAction, writeRepomixConfig} from '~/cli/actions/repomixAction.js';
+import { runRepomixAction, writeRepomixConfig, writeRepomixOutput } from '~/cli/actions/repomixAction.js';
+import { CliOptions } from '~/cli/types.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
-import { DEFAULT_REPOMIX_CONFIG, TEMPLATE_DIR } from '~/shared/constants.js';
+import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 
-const repomixInstructionsDir = path.join(TEMPLATE_DIR, 'repomix-instructions');
+const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
 
-export const runInitAction = async (rulesDir: string, repomix: boolean = false) => {
+export const runInitAction = async (opt: CliOptions) => {
+  logger.log("\n");
+  logger.prompt.intro("Initializing Cursor Rules");
+
   const yoloMode = await confirmYoloMode();
 
-  if (isCancel(yoloMode)) {
-    cancel('Operation cancelled.');
-    process.exit(0);
-  }
-
   if (yoloMode) {
-    await runYoloAction(rulesDir);
+    await runInitForceAction(opt);
     return;
   }
 
@@ -33,14 +31,8 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
       ],
       required: false,
     }),
-    install: async ({ results }) => {
-      if (results?.rules && results.rules.length > 0) {
-        result = await installRules(rulesDir, false, results.rules);
-      }
-      return;
-    },
     runRepomix: async () => {
-      if (repomix) {
+      if (opt.repomix) {
         return true;
       }
 
@@ -53,7 +45,7 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
       });
     },
     repomixOptions: async ({results}) => {
-      if (!results.runRepomix) return [];
+      if (!results.runRepomix || opt.repomix) return ['compress', 'removeEmptyLines'];
 
       return multiselect({
         message: 'Repomix options',
@@ -62,32 +54,24 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
           { value: 'compress', label: 'Perform code compression', hint: 'recommended' },
           { value: 'removeEmptyLines', label: 'Remove empty lines', hint: 'recommended' },
           { value: 'removeComments', label: 'Remove comments', hint: 'Good for useless comments' },
-          { value: 'includeEmptyDirectories', label: 'Include empty directories' },
+          { value: 'includeEmptyDirectories', label: 'Includes empty directories' },
         ],
+        required: false,
       });
     },
     saveRepomixConfig: async ({results}) => {
-      if (!results.runRepomix) return false;
+      if (!results.runRepomix) {
+        return false;
+      }
+
+      if (opt.repomix) {
+        return true;
+      }
 
       return confirm({
         message: 'Save repomix config?',
       });
     },
-    // TODO: For chaining repomix output inside the AI
-    // wipRepomix: ({ results }) => {
-    //   const rules = Array.isArray(results.rules) ? results.rules : [];
-    //   const shouldRunRepomix = rules.includes('project-overview');
-
-    //   if (!shouldRunRepomix) return;
-
-    //   return select({
-    //     message: 'Creating a project overview requires running repomix over your codebase (we do it for you).',
-    //     options: [
-    //       { value: true, label: 'Sure, go ahead!', hint: 'That\'s what YOLO is for!' },
-    //       { value: false, label: 'No, add empty templates.' },
-    //     ],
-    //   });
-    // },
   },
   {
     // On Cancel callback that wraps the group
@@ -98,62 +82,67 @@ export const runInitAction = async (rulesDir: string, repomix: boolean = false) 
     },
   });
 
-  logger.trace('selected rules:', group.rules);
-  logger.trace('run repomix:', group.runRepomix);
-  
-  if (!Array.isArray(group.repomixOptions)) {
-    logger.error('repomix options is not an array');
+  if (group.rules.length > 0) {
+    result = await installRules(rulesDir, opt.overwrite, group.rules);
+  }
+
+  if (!group.runRepomix) {
+    logInstallResult(result);
     return;
   }
-  
-  const formattedOptions = group.repomixOptions.reduce((acc, val) => {
+
+  const formattedOptions = (group.repomixOptions as Array<string>).reduce((acc, val) => {
     return {
       ...acc,
       [val]: true
     };
   }, {});
-  
-  
-  logger.trace('repomix options:', formattedOptions);
-  logger.trace('save repomix config:', group.saveRepomixConfig);
 
-  if(group.saveRepomixConfig) {
+  const repomixOptions = {
+    ...REPOMIX_OPTIONS,
+    ...formattedOptions
+  }
+
+  if (Boolean(group.saveRepomixConfig)) {
     const repomixConfig = {
       ...DEFAULT_REPOMIX_CONFIG,
       output: {
         ...DEFAULT_REPOMIX_CONFIG.output,
-        ...formattedOptions
+        ...repomixOptions
       }
     }
 
     await writeRepomixConfig(repomixConfig);
   }
 
-
-  if(group.runRepomix) {
-    await repomixAction(['.'], process.cwd(), {
-      ...formattedOptions,
-      gitSortByChanges: false,
-      instructionFilePath: path.join(repomixInstructionsDir, 'instruction-project-structure.md'),
-    });
+  if (group.repomixOptions) {
+    await writeRepomixOutput({ ...repomixOptions, quiet: opt.quiet });
   }
 
   logInstallResult(result);
 };
 
 
+export async function runInitForceAction(opt: CliOptions) {
+  const result = await installRules(rulesDir, true);
+  await runRepomixAction(opt.quiet);
+  logInstallResult(result);
+}
+
+
 async function confirmYoloMode() {
-  return select({
+  const result = await select({
     message: 'How do you want to add rules?.',
     options: [
       { value: true, label: 'YOLO', hint: 'overwrites already existing rules if filenames match' },
       { value: false, label: 'Custom' },
     ],
   });
-};
 
-export async function runYoloAction(rulesDir: string) {
-  const result = await installRules(rulesDir, true);
-  await runRepomixAction();
-  logInstallResult(result);
-}
+  if (isCancel(result)) {
+    cancel('Operation cancelled.');
+    process.exit(0);
+  }
+
+  return result;
+};

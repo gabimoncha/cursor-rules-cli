@@ -19,12 +19,12 @@ const IGNORE_PATTERNS = [
 
 export const REPOMIX_OPTIONS = {
   style: "xml" as const,
-  compress: true,
-  removeEmptyLines: false,
+  compress: false,
   removeComments: false,
-  includeEmptyDirectories: true,
-  gitSortByChanges: false,
+  removeEmptyLines: false,
   topFilesLength: 5,
+  includeEmptyDirectories: false,
+  gitSortByChanges: false,
   ignore: IGNORE_PATTERNS.join(','),
 }
 

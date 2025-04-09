@@ -1,16 +1,15 @@
 import path from 'path';
 import { writeFileSync } from 'fs';
-import { log } from '@clack/prompts';
-import { runCli as repomixAction, RepomixConfig } from 'repomix';
+import pc from 'picocolors';
+import { CliOptions as RepomixCliOptions, runCli as repomixAction, RepomixConfig } from 'repomix';
 import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 
-const repomixInstructionsDir = path.join(TEMPLATE_DIR, 'repomix-instructions');
-
-export const runRepomixAction = async () => {
-  log.step('Creating repomix config...');
+export const runRepomixAction = async (quiet: boolean = false) => {
+  logger.prompt.step('Creating repomix config...');
 
   const repomixOptions = {
+    ...REPOMIX_OPTIONS,
     compress: true,
     removeEmptyLines: true,
   }
@@ -27,23 +26,39 @@ export const runRepomixAction = async () => {
 
   await writeRepomixConfig(yoloRepomixConfig);
 
-  log.step('Running repomix...');
-  await repomixAction(['.'], process.cwd(), {
-    ...REPOMIX_OPTIONS,
-    instructionFilePath: path.join(repomixInstructionsDir, 'instruction-project-structure.md'),
-  });
-  log.success('Repomix done!');
-  log.info(`Open AI Chat in Agent Mode and ask to execute the instructions from the file`)
-  log.info(`You can check the instructions at the bottom of the file here:\n${path.join(process.cwd(), 'repomix.output.xml')}`);
+  await writeRepomixOutput({ ...repomixOptions, quiet });
+}
+
+export const writeRepomixOutput = async (
+  opt: RepomixCliOptions,
+  instructionFile: string = 'project-structure'
+) => {
+  try {
+    const { quiet, ...restOpts } = opt;
+    
+    const instructionFilePath = path.join(TEMPLATE_DIR, 'repomix-instructions', `instruction-${instructionFile}.md`);
+    await repomixAction(['.'], process.cwd(), {
+      ...restOpts,
+      quiet,
+      instructionFilePath,
+    })
+    
+    logger.quiet("\nRepomix output:", pc.cyan("./repomix-output.xml"));
+    
+    logger.prompt.info("You can check the instructions at the bottom of the file here:", pc.cyan("./repomix-output.xml"));
+    logger.prompt.info("Open the AI Chat in Agent Mode, ask it to execute the instructions and tag repomix-output.xml")
+  } catch (err) {
+    logger.prompt.warn("Error running repomix!");
+  }
 }
 
 export const writeRepomixConfig = async (config: RepomixConfig) => {
   try {
     const configPath = path.join(process.cwd(), 'repomix.config.json');
     writeFileSync(configPath, JSON.stringify(config, null, 2));
-    log.success('Repomix config saved!');
-    log.info(`You can edit the config file here:\n${configPath}`);
+    logger.prompt.info("Repomix config saved to:", pc.cyan("./repomix.config.json"));
+    logger.quiet("\nRepomix config file:", pc.cyan("./repomix.config.json"));
   } catch (err) {
-    log.warn('Error saving repomix config!');
+    logger.prompt.warn("Error saving repomix config!");
   }
 }

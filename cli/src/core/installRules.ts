@@ -1,18 +1,15 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { confirm, log, outro } from "@clack/prompts";
+import { confirm } from "@clack/prompts";
 import pc from 'picocolors';
 import { logger } from "~/shared/logger.js";
 
 export async function installRules(templateDir: string, overwrite: boolean = false, selectedRules: string[] = []):Promise<boolean> {
   try {
-    // Use current working directory as target
-    const targetDir = process.cwd();
-
-    log.step("Installing Cursor rules...");
+    logger.prompt.step("Installing Cursor rules...");
 
     // Create .cursor directory if it doesn't exist
-    const cursorDir = path.join(targetDir, ".cursor", "rules");
+    const cursorDir = path.join(process.cwd(), ".cursor", "rules");
     await fs.mkdir(cursorDir, { recursive: true });
 
     // Get list of rule files from the package
@@ -43,7 +40,7 @@ export async function installRules(templateDir: string, overwrite: boolean = fal
       // Copy the rule file
 
       if(!fileExists) {
-        log.message(`Adding ${fileName}`);
+        logger.prompt.message(`Adding ${fileName}`);
         await fs.copyFile(source, destination);
         copied++;
         continue;
@@ -70,7 +67,7 @@ export async function installRules(templateDir: string, overwrite: boolean = fal
     }
 
     if (result) {
-      log.info(`${copied} rules added, ${overwritten} rules overwritten.`);
+      logger.prompt.info(`${copied} rules added, ${overwritten} rules overwritten.`);
     }
     return result;
   } catch (error) {
@@ -80,10 +77,12 @@ export async function installRules(templateDir: string, overwrite: boolean = fal
   }
 }
 
-export function logInstallResult(result: boolean) {
-  if (result) {
-    outro(pc.green(`You're all set!`));
+export function logInstallResult(changesMade: boolean) {
+  if (changesMade) {
+    logger.prompt.outro(pc.green("You're all set!"));
+    logger.quiet(pc.green("\nYou're all set!"));
   } else {
-    outro(pc.yellow(`Zero changes made.`));
+    logger.prompt.outro(pc.yellow("No rules were added."));
+    logger.quiet(pc.yellow("\nNo rules were added."));
   }
 }

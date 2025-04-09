@@ -38,9 +38,13 @@ function setupErrorHandlers() {
 (async () => {
   try {
     setupErrorHandlers();
-
-    const { run } = await import('../lib/cli/cliRun.js');
-    await run();
+    let cli;
+    try {
+      cli = await import('../src/cli/cliRun.ts');
+    } catch(e) {
+      cli = await import('../lib/cli/cliRun.js');
+    }
+    await cli.run();
   } catch (error) {
     if (error instanceof Error) {
       console.error('Fatal Error:', {
