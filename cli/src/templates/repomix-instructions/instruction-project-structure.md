@@ -1,3 +1,4 @@
+should_read_entire_file: true
 This file contains the entire codebase of library. Create or edit the current `.cursor/rules/project-structure.mdc` rules, to include the project's main purpose, key features, directory structure and overall architecture. Use `directory_structure` from this file, to create a formatted tree structure of the project, with a short description for each folder.
 
 Example PROJECT_STRUCTURE.md output:
