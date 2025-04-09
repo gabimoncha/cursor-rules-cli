@@ -49,20 +49,20 @@ npm install --save-dev @gabimoncha/cursor-rules
 ## Usage
 
 ```bash
-# Initialize cursor rules in your project
-cursor-rules --init
+# Initialize cursor rules
+cursor-rules init
 
-# Generate repository overview for AI
-cursor-rules --repomix
+# Generate repomix file
+cursor-rules repomix
 
-# Initialize rules and generate repository overview
-cursor-rules --init --repomix
+# Initialize and generate repomix
+cursor-rules init -r
 
 # Force overwrite existing rules
-cursor-rules --force
+cursor-rules init -f
 
 # List existing rules
-cursor-rules --list
+cursor-rules list
 
 # Display version or help
 cursor-rules --version
