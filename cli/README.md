@@ -5,95 +5,67 @@ A command-line tool for managing AI-assisted guidance in your projects through C
 
 ## What are Cursor Rules?
 
-Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand project structure, coding conventions, and best practices specific to your codebase.
+Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand project structure, coding conventions, and best practices.
 
 ## Installation
 
-### Global Installation
-
 ```bash
-# Using bun
+# Global install
+
+# bun
 bun add -g @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn global add @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install -g @gabimoncha/cursor-rules
-```
 
-### Project Installation
+# Project install
 
-```bash
-# Using bun
+# bun
 bun add -d @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn add -D @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install --save-dev @gabimoncha/cursor-rules
 ```
 
 ## Usage
 
-### - init cursor rules
 ```bash
+# Initialize cursor rules
 cursor-rules --init
-```
 
-This will:
-1. Create a `.cursor/rules` directory in your project
-2. Add default rule templates (cursor-rules.md, project-structure.md, task-list.md)
-3. Guide you through customizing these templates for your project
-
-### - generate repomix file to be used with AI
-```bash
+# Generate repomix file for AI analysis
 cursor-rules --repomix
-```
 
-### Available Commands
-
-```bash
-# Start CLI app
-cursor-rules --init
-```
-```bash
-# Generate repomix with custom config file
-cursor-rules --repomix
-```
-```bash
-# Start CLI and confirm repomix
+# Initialize with repomix generation
 cursor-rules --init --repomix
-```
-```bash
+
 # Force overwrite existing rules
 cursor-rules --force
-```
-```bash
+
 # List existing rules
 cursor-rules --list
-```
-```bash
-# Display the current version
+
+# Display version or help
 cursor-rules --version
-```
-```bash
-# Show help information
 cursor-rules --help
 ```
 
+When you initialize cursor rules, the CLI will:
+1. Create a `.cursor/rules` directory in your project
+2. Add default rule templates
+3. Guide you through customization
+
 ## Default Rule Templates
 
-The CLI provides three default rule templates:
-
-- **cursor-rules.md**: Guidelines for adding and organizing AI rules in your project
-- **project-structure.md**: Overview of your project's structure and organization
-- **task-list.md**: Framework for tracking project progress with markdown task lists
+- **cursor-rules.md**: Guidelines for adding and organizing AI rules
+- **project-structure.md**: Overview of project structure and organization
+- **task-list.md**: Framework for tracking project progress
 
 ## Documentation
 

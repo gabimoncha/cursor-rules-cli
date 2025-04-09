@@ -5,14 +5,12 @@ A command-line tool for managing AI-assisted guidance in your projects through C
 
 ## What are Cursor Rules?
 
-Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand:
+Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
 
 - Project structure and organization
 - Coding conventions and patterns
 - Task management approaches
 - Best practices specific to your codebase
-
-By adding Cursor rules to your project, you enhance the AI's capability to provide more relevant and context-aware assistance.
 
 ## Features
 
@@ -20,115 +18,71 @@ By adding Cursor rules to your project, you enhance the AI's capability to provi
 - 📋 **Template Rules**: Includes default rule templates for common use cases
 - 💬 **Interactive Setup**: Guided setup process using command-line prompts
 - 📊 **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
-- 📁 **Project Structure**: Creates standardized rule organization within projects
+- 📁 **Project Structure**: Creates standardized rule organization
 
 ## Installation
 
-### Global Installation
-
 ```bash
-# Using bun
+# Global install
+
+# bun
 bun add -g @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn global add @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install -g @gabimoncha/cursor-rules
-```
 
-### Project Installation
+# Project install
 
-```bash
-# Using bun
+# bun
 bun add -d @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn add -D @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install --save-dev @gabimoncha/cursor-rules
 ```
 
 ## Usage
 
-### Initialize Cursor Rules
-
-Add default Cursor rules to your project:
-
 ```bash
+# Initialize cursor rules in your project
 cursor-rules --init
-```
 
-This will:
-1. Create a `.cursor/rules` directory in your project
-2. Add default rule templates (cursor-rules.md, project-structure.md, task-list.md)
-3. Guide you through customizing these templates for your project
-
-### Generate Repository Overview
-
-Create a Repomix XML file for enhanced AI understanding of your codebase:
-
-```bash
+# Generate repository overview for AI
 cursor-rules --repomix
-```
 
-### Available Commands
-
-```bash
-# Start CLI app
-cursor-rules --init
-```
-```bash
-# Generate repomix with custom config file
-cursor-rules --repomix
-```
-```bash
-# Start CLI and confirm repomix
+# Initialize rules and generate repository overview
 cursor-rules --init --repomix
-```
-```bash
+
 # Force overwrite existing rules
 cursor-rules --force
-```
-```bash
+
 # List existing rules
 cursor-rules --list
-```
-```bash
-# Display the current version
+
+# Display version or help
 cursor-rules --version
-```
-```bash
-# Show help information
 cursor-rules --help
 ```
 
 ## Default Rule Templates
 
-The CLI provides three default rule templates:
+The CLI provides three default templates:
 
-### 1. cursor-rules.md
-Guidelines for adding and organizing AI rules in your project.
-
-### 2. task-list.md
-Framework for tracking project progress with markdown task lists.
-
-### 3. project-structure.md
-Empty template for your project's structure. Can be updated by AI after running repomix output default instructions
+- **cursor-rules.md**: Guidelines for adding and organizing AI rules
+- **task-list.md**: Framework for tracking project progress with task lists
+- **project-structure.md**: Template for documenting project structure
 
 ## How Cursor Rules Work
 
-When you create Cursor rules in your project:
-
-1. The Cursor IDE detects these rules in the `.cursor/rules` directory or at the project root
-2. The AI assistant reads these rules to understand project context
-3. When you ask questions or request assistance, the AI follows the guidelines in your rules
-4. This results in more contextually appropriate and project-aware responses
+1. Cursor IDE detects rules in `.cursor/rules` directory or project root
+2. AI assistant reads these rules to understand project context
+3. When requesting assistance, AI follows guidelines in your rules
+4. Results in more contextually appropriate and project-aware responses
 
 ## Documentation
 
@@ -138,8 +92,6 @@ For more detailed documentation, visit:
 - [Contributing Guide](https://github.com/gabimoncha/cursor-rules-cli/blob/main/docs/CONTRIBUTING.md)
 
 ## Development
-
-To contribute to this project:
 
 ```bash
 # Clone the repository

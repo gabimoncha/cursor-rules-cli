@@ -1,58 +1,55 @@
 # Cursor Rules CLI Commands 
 > Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
-This document provides a comprehensive reference for all commands and options available in the Cursor Rules CLI.
+A reference for all commands and options available in the Cursor Rules CLI.
 
-## Command Overview
+## Commands
 
-The Cursor Rules CLI provides several commands for managing rule files in your projects:
-
-```
-cursor-rules [options]
-```
+| Command | Description |
+|---------|-------------|
+| `init` | Start the setup process |
+| `list` | List all rules |
+| `repomix` | Generate repomix output with recommended settings |
 
 ## Global Options
 
 | Option | Description |
 |--------|-------------|
-| `--force`, `-f` | Overwrites existing rules |
-| `--init` | Initializes Cursor rules in your project |
-| `--repomix` | Bundles code into an XML file, with recommended config |
-| `--list` | Lists project rules |
-| `--version`, `-V` | Display the version number |
-| `--verbose` | Shows more detailed output |
-| `--quiet` | Reduces output to essential information only |
+| `-q, --quiet` | Disable all output to stdout |
+| `-v, --version` | Show version information |
+| `--verbose` | Enable verbose logging for detailed output |
 | `--help`, `-h` | Display help information |
 
-## Command Examples
+## Command Options
+
+### init
+
+| Option | Description |
+|--------|-------------|
+| `-f, --force` | Overwrites already existing rules if filenames match |
+| `-r, --repomix` | Generate repomix output with recommended settings |
+| `-o, --overwrite` | Overwrite existing rules |
+
+## Usage Examples
 
 ```bash
-# Start CLI app
-cursor-rules --init
-```
-```bash
-# Generate repomix with custom config file
-cursor-rules --repomix
-```
-```bash
-# Start CLI and confirm repomix
-cursor-rules --init --repomix
-```
-```bash
+# Initialize cursor rules
+cursor-rules init
+
+# Generate repomix file
+cursor-rules repomix
+
+# Initialize and generate repomix
+cursor-rules init -r
+
 # Force overwrite existing rules
-cursor-rules --force
-```
-```bash
+cursor-rules init -f
+
 # List existing rules
-cursor-rules --list
-```
-```bash
-# Display the current version
-cursor-rules --version
-```
-```bash
-# Show help information
-cursor-rules --help
+cursor-rules list
+
+# Show version information
+cursor-rules -v
 ```
 
 ## Exit Codes

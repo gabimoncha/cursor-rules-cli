@@ -43,6 +43,10 @@ The Cursor Rules CLI facilitates the creation, installation, and management of C
 │   │   │       ├── project-structure.md  # Project structure guidelines
 │   │   │       ├── task-list.md          # Task management guidelines
 │   │   ├── index.ts                  # Main entry point
+│   ├── package.json                # CLI package configuration
+│   ├── tsconfig.json                # TypeScript configuration
+│   ├── tsconfig.build.json          # Build-specific TypeScript config
+│   ├── README.md                   # CLI-specific documentation
 ├── docs/                         # Documentation
 │   ├── CLI_COMMANDS.md             # CLI command reference
 │   ├── CONTRIBUTING.md             # Contribution guidelines
@@ -54,7 +58,34 @@ The Cursor Rules CLI facilitates the creation, installation, and management of C
 │   ├── single_folder/              # Simple folder example
 │   ├── index.ts                    # Example entry point
 │   ├── package.json                # Example package configuration
+├── .gitignore                    # Git ignore file
+├── FUTURE_ENHANCEMENTS.md        # Planned improvements documentation
+├── LICENSE                       # MIT License file
+├── package.json                  # Root package configuration
+├── README.md                     # Main project documentation
 ```
+
+## Architecture
+
+The project follows a modular architecture:
+
+1. **CLI Interface Layer**: 
+   - Uses Commander.js for command parsing
+   - Implements interactive prompts with @clack/prompts
+   - Handles user input and command routing
+
+2. **Core Logic Layer**:
+   - Rule installation and management
+   - Package information parsing
+   - Configuration validation
+
+3. **Template Management**:
+   - Default rule templates
+   - Template customization
+
+4. **Repomix Integration**:
+   - Repository analysis
+   - XML output generation for AI consumption
 
 ## Default Templates
 
@@ -95,16 +126,26 @@ npm install --save-dev @gabimoncha/cursor-rules
 
 ```bash
 # Initialize cursor rules in your project
-cursor-rules --init
+cursor-rules init
 
 # Generate repomix file for AI analysis
-cursor-rules --repomix
+cursor-rules repomix
 
 # List existing rules in the project
-cursor-rules --list
+cursor-rules list
+```
 
-# Force overwrite existing rules
-cursor-rules --force
+### Options
+
+```bash
+# Initialize cursor rules with default templates, overwriting rules and generating repomix-output.xml and repomix.config.file
+cursor-rules init --force
+
+# Initialize cursor rules, autoselect default repomix options generating repomix-output.xml and repomix.config.file
+cursor-rules init --repomix
+
+# Initialize cursor rules, overwrites selected rules
+cursor-rules init --overwrite
 ```
 
 ## Technical implementation
