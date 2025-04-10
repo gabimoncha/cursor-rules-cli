@@ -113,4 +113,4 @@ MIT
 ## Acknowledgements
 
 - Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
-- Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
+- Codebase inspired from and using **[repomix](https://github.com/yamadashy/repomix.git)**

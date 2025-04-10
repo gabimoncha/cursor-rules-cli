@@ -76,7 +76,8 @@ For more detailed documentation, visit:
 
 ## Acknowledgements
 
-Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
+- Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
+- Codebase inspired from and using **[repomix](https://github.com/yamadashy/repomix.git)**
 
 ## License
 

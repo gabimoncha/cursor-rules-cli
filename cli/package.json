@@ -1,6 +1,6 @@
 {
   "name": "@gabimoncha/cursor-rules",
-  "description": "A CLI tool to add Cursor rules to a project",
+  "description": "A CLI for bootstrapping Cursor rules to a project",
   "version": "0.1.1",
   "type": "module",
   "main": "./lib/index.js",
