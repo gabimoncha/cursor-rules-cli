@@ -3,6 +3,8 @@
 
 A command-line tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
 
+<img src="https://github.com/user-attachments/assets/7ace785a-fb5f-4537-963c-68eea490def1" width="50%" height="50%"/>
+
 ## What are Cursor Rules?
 
 Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
