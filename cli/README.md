@@ -1,7 +1,9 @@
 # cursor-rules
 > Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
-A command-line tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
+A CLI tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
+
+<img src="https://github.com/user-attachments/assets/7ace785a-fb5f-4537-963c-68eea490def1" width="80%" height="80%"/>
 
 ## What are Cursor Rules?
 

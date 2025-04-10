@@ -1,7 +1,7 @@
 {
   "name": "@gabimoncha/cursor-rules",
   "description": "A CLI for bootstrapping Cursor rules to a project",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
