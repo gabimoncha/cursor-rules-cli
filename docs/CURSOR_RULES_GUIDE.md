@@ -17,7 +17,7 @@ Cursor rules are special markdown files that provide contextual information and 
 ```markdown
 ---
 description: typescript-conventions
-globs: [**/*.ts]
+globs: optional/path/pattern
 alwaysApply: boolean
 ---
 

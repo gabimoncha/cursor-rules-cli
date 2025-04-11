@@ -62,6 +62,7 @@ cli/
       cliRun.ts
       types.ts
     core/
+      checkForUpdates.ts
       installRules.ts
       packageJsonParse.ts
     shared/
@@ -165,11 +166,13 @@ import { CliOptions as RepomixCliOptions, runCli as repomixAction, RepomixConfig
 import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 export const runRepomixAction = async (quiet: boolean = false) =>
+⋮----
 export const writeRepomixOutput = async (
   opt: RepomixCliOptions,
   instructionFile: string = 'project-structure'
 ) =>
 export const writeRepomixConfig = async (config: RepomixConfig) =>
+const returnContextWindowWarning = (totalTokens: number, model: string) =>
 </file>
 
 <file path="cli/src/cli/actions/versionAction.ts">
@@ -181,18 +184,16 @@ export const runVersionAction = async (): Promise<void> =>
 
 <file path="cli/src/cli/cliRun.ts">
 import process from 'node:process';
-import path from 'node:path';
-import { Command, CommandOptions, Option } from 'commander';
+import { Command, Option } from 'commander';
 import pc from 'picocolors';
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
-import { installRules, logInstallResult } from '~/core/installRules.js';
 import { runInitAction, runInitForceAction } from './actions/initAction.js';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
-import { TEMPLATE_DIR } from '~/shared/constants.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
+import { checkForUpdates } from '~/core/checkForUpdates.js';
 ⋮----
 class RootCommand extends Command
 ⋮----
@@ -225,6 +226,31 @@ export interface CliOptions extends OptionValues {
 }
 </file>
 
+<file path="cli/src/core/checkForUpdates.ts">
+import path from 'path';
+import fs from 'fs/promises';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
+import { logger } from '~/shared/logger.js';
+import { getPackageManager, getPackageName, getVersion } from '~/core/packageJsonParse.js';
+import semver from 'semver';
+import { execSync } from 'child_process';
+import pc from 'picocolors';
+⋮----
+export async function checkForUpdates()
+⋮----
+// Silently fail if update check fails
+⋮----
+async function getLatestVersion(): Promise<
+function getCacheDir()
+function checkIfLocal()
+type CachedData = {
+  latestVersion: string;
+  timestamp: number;
+}
+function readCache(): CachedData | null
+async function writeCache(data: CachedData)
+</file>
+
 <file path="cli/src/core/installRules.ts">
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -239,7 +265,11 @@ export function logInstallResult(changesMade: boolean)
 import path from 'node:path';
 ⋮----
 import { logger } from '~/shared/logger.js';
+import { detect } from 'package-manager-detector/detect'
+import { resolveCommand } from 'package-manager-detector/commands';
 export const getVersion = async (): Promise<string> =>
+export const getPackageName = async (): Promise<string> =>
+export const getPackageManager = async (commandType: 'global' | 'upgrade') =>
 const parsePackageJson = async (): Promise<
 </file>
 
@@ -289,6 +319,7 @@ note(...args: unknown[])
 debug(...args: unknown[])
 trace(...args: unknown[])
 quiet(...args: unknown[])
+force(...args: unknown[])
 private formatArgs(args: unknown[]): string
 ⋮----
 export const setLogLevel = (level: CursorRulesLogLevel) =>
@@ -485,8 +516,8 @@ Should become:
 <file path="cli/package.json">
 {
   "name": "@gabimoncha/cursor-rules",
-  "description": "A CLI tool to add Cursor rules to a project",
-  "version": "0.0.8",
+  "description": "A CLI for bootstrapping Cursor rules to a project",
+  "version": "0.1.5",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -537,6 +568,7 @@ Should become:
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "commander": "^13.1.0",
+    "package-manager-detector": "^1.1.0",
     "repomix": "^0.3.1",
     "zod": "^3.24.2"
   },
@@ -559,99 +591,73 @@ Should become:
 # cursor-rules
 > Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
-A command-line tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
+A CLI tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
+
+<img src="https://github.com/user-attachments/assets/7ace785a-fb5f-4537-963c-68eea490def1" width="80%" height="80%"/>
 
 ## What are Cursor Rules?
 
-Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand project structure, coding conventions, and best practices specific to your codebase.
+Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand project structure, coding conventions, and best practices.
 
 ## Installation
 
-### Global Installation
-
 ```bash
-# Using bun
+# Global install
+
+# bun
 bun add -g @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn global add @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install -g @gabimoncha/cursor-rules
-```
 
-### Project Installation
+# Project install
 
-```bash
-# Using bun
+# bun
 bun add -d @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn add -D @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install --save-dev @gabimoncha/cursor-rules
 ```
 
 ## Usage
 
-### - init cursor rules
 ```bash
-cursor-rules --init
-```
+# Initialize cursor rules
+cursor-rules init
 
-This will:
-1. Create a `.cursor/rules` directory in your project
-2. Add default rule templates (cursor-rules.md, project-structure.md, task-list.md)
-3. Guide you through customizing these templates for your project
+# Generate repomix file
+cursor-rules repomix
 
-### - generate repomix file to be used with AI
-```bash
-cursor-rules --repomix
-```
+# Initialize and generate repomix
+cursor-rules init -r
 
-### Available Commands
-
-```bash
-# Start CLI app
-cursor-rules --init
-```
-```bash
-# Generate repomix with custom config file
-cursor-rules --repomix
-```
-```bash
-# Start CLI and confirm repomix
-cursor-rules --init --repomix
-```
-```bash
 # Force overwrite existing rules
-cursor-rules --force
-```
-```bash
+cursor-rules init -f
+
 # List existing rules
-cursor-rules --list
-```
-```bash
-# Display the current version
+cursor-rules list
+
+# Display version or help
 cursor-rules --version
-```
-```bash
-# Show help information
 cursor-rules --help
 ```
 
+When you initialize cursor rules, the CLI will:
+1. Create a `.cursor/rules` directory in your project
+2. Add default rule templates
+3. Guide you through customization
+
 ## Default Rule Templates
 
-The CLI provides three default rule templates:
-
-- **cursor-rules.md**: Guidelines for adding and organizing AI rules in your project
-- **project-structure.md**: Overview of your project's structure and organization
-- **task-list.md**: Framework for tracking project progress with markdown task lists
+- **cursor-rules.md**: Guidelines for adding and organizing AI rules
+- **project-structure.md**: Overview of project structure and organization
+- **task-list.md**: Framework for tracking project progress
 
 ## Documentation
 
@@ -662,7 +668,8 @@ For more detailed documentation, visit:
 
 ## Acknowledgements
 
-Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
+- Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
+- Codebase inspired from and using **[repomix](https://github.com/yamadashy/repomix.git)**
 
 ## License
 
@@ -713,58 +720,55 @@ MIT
 # Cursor Rules CLI Commands 
 > Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
-This document provides a comprehensive reference for all commands and options available in the Cursor Rules CLI.
+A reference for all commands and options available in the Cursor Rules CLI.
 
-## Command Overview
+## Commands
 
-The Cursor Rules CLI provides several commands for managing rule files in your projects:
-
-```
-cursor-rules [options]
-```
+| Command | Description |
+|---------|-------------|
+| `init` | Start the setup process |
+| `list` | List all rules |
+| `repomix` | Generate repomix output with recommended settings |
 
 ## Global Options
 
 | Option | Description |
 |--------|-------------|
-| `--force`, `-f` | Overwrites existing rules |
-| `--init` | Initializes Cursor rules in your project |
-| `--repomix` | Bundles code into an XML file, with recommended config |
-| `--list` | Lists project rules |
-| `--version`, `-V` | Display the version number |
-| `--verbose` | Shows more detailed output |
-| `--quiet` | Reduces output to essential information only |
+| `-q, --quiet` | Disable all output to stdout |
+| `-v, --version` | Show version information |
+| `--verbose` | Enable verbose logging for detailed output |
 | `--help`, `-h` | Display help information |
 
-## Command Examples
+## Command Options
+
+### init
+
+| Option | Description |
+|--------|-------------|
+| `-f, --force` | Overwrites already existing rules if filenames match |
+| `-r, --repomix` | Generate repomix output with recommended settings |
+| `-o, --overwrite` | Overwrite existing rules |
+
+## Usage Examples
 
 ```bash
-# Start CLI app
-cursor-rules --init
-```
-```bash
-# Generate repomix with custom config file
-cursor-rules --repomix
-```
-```bash
-# Start CLI and confirm repomix
-cursor-rules --init --repomix
-```
-```bash
+# Initialize cursor rules
+cursor-rules init
+
+# Generate repomix file
+cursor-rules repomix
+
+# Initialize and generate repomix
+cursor-rules init -r
+
 # Force overwrite existing rules
-cursor-rules --force
-```
-```bash
+cursor-rules init -f
+
 # List existing rules
-cursor-rules --list
-```
-```bash
-# Display the current version
-cursor-rules --version
-```
-```bash
-# Show help information
-cursor-rules --help
+cursor-rules list
+
+# Show version information
+cursor-rules -v
 ```
 
 ## Exit Codes
@@ -779,81 +783,21 @@ cursor-rules --help
 # Contributing to Cursor Rules CLI
 > Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
-Thank you for your interest in contributing to the Cursor Rules CLI project! This document provides guidelines and instructions for contributing to the project.
-
-## Code of Conduct
-
-Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md). We expect all contributors to adhere to these guidelines to create a positive and respectful community.
+Thank you for your interest in contributing to the Cursor Rules CLI project!
 
 ## How to Contribute
 
-There are many ways to contribute to the Cursor Rules CLI project:
+1. **Report bugs** with clear steps to reproduce, expected behavior, and environment info
+2. **Suggest enhancements** with detailed descriptions and possible implementations
+3. **Improve documentation** by fixing errors or adding missing information
+4. **Submit code changes** via pull requests
+5. **Write tests** for new features or bug fixes
+6. **Review pull requests** from other contributors
 
-1. Reporting bugs
-2. Suggesting enhancements
-3. Improving documentation
-4. Submitting code changes
-5. Writing tests
-6. Reviewing pull requests
-
-### Reporting Bugs
-
-If you encounter a bug while using Cursor Rules CLI, please report it by creating an issue on our [GitHub repository](https://github.com/gabimoncha/cursor-rules-cli/issues). When reporting a bug, please include:
-
-- A clear and descriptive title
-- Steps to reproduce the bug
-- Expected behavior
-- Actual behavior
-- Any relevant screenshots or error messages
-- Your environment (OS, Node.js version, etc.)
-
-### Suggesting Enhancements
-
-To suggest an enhancement, please create an issue on our [GitHub repository](https://github.com/gabimoncha/cursor-rules-cli/issues) with the "enhancement" label. When suggesting an enhancement, please include:
-
-- A clear and descriptive title
-- A detailed description of the proposed enhancement
-- Why this enhancement would be useful
-- Possible implementations or approaches
-
-### Improving Documentation
-
-Documentation improvements are always welcome! You can contribute to documentation by:
-
-- Fixing typos or grammatical errors
-- Adding missing information
-- Improving clarity or organization
-- Translating documentation to other languages
-
-To contribute to documentation, please submit a pull request with your changes.
-
-### Submitting Code Changes
-
-To submit code changes, please follow these steps:
-
-1. Fork the repository
-2. Create a new branch for your changes
-3. Make your changes
-4. Run tests to ensure your changes don't break existing functionality
-5. Submit a pull request
-
-#### Pull Request Guidelines
-
-When submitting a pull request, please:
-
-- Reference any related issues
-- Include a clear and descriptive title
-- Provide a detailed description of the changes
-- Follow the code style of the project
-- Include tests for your changes
-- Update documentation if necessary
-
-### Development Setup
-
-To set up the project for development:
+## Development Setup
 
 ```bash
-# Clone your fork of the repository
+# Clone your fork
 git clone https://github.com/YOUR_USERNAME/cursor-rules-cli.git
 cd cursor-rules-cli
 
@@ -864,32 +808,33 @@ bun install
 bun prepare
 ```
 
-#### Project Structure
-
-The project follows this structure:
+## Project Structure
 
 ```
 .
-├── cli/                     # Main CLI implementation package
-│   ├── bin/                   # CLI executable scripts
+├── cli/                     # Main CLI implementation 
+│   ├── bin/                   # CLI executables
 │   ├── src/                   # Source code
-│   │   ├── cli/                 # CLI implementation components
-│   │   │   ├── actions/           # Command action handlers
-│   │   │   ├── cliRun.ts          # CLI runner functionality
-│   │   │   ├── types.ts           # CLI type definitions
-│   │   ├── core/                # Core business logic
-│   │   ├── shared/              # Shared utilities and constants
+│   │   ├── cli/                 # CLI components
+│   │   ├── core/                # Business logic
+│   │   ├── shared/              # Utilities, constants
 │   │   ├── templates/           # Rule templates
-│   │   ├── index.ts             # Main entry point
+│   │   ├── index.ts             # Entry point
 ├── docs/                    # Documentation
-├── example/                 # Example project for testing
+├── example/                 # Example project
 ```
 
-Please see the [project structure documentation](../.cursor/rules/project-structure.mdc) for a more detailed overview of the project's organization.
+See [project-structure.mdc](../.cursor/rules/project-structure.mdc) for detailed overview.
 
-### Testing (WIP)
+## Pull Request Guidelines
 
-Please write tests for any new code you contribute. We use Jest for testing:
+- Reference related issues
+- Include clear title and description
+- Follow project code style
+- Include tests for changes
+- Update documentation if needed
+
+## Testing (WIP)
 
 ```bash
 # Run all tests
@@ -899,53 +844,35 @@ bun test
 bun test -- -t "test name"
 ```
 
-## Release Process (WIP)
-
-Our release process follows these steps:
-
-1. We gather and prioritize changes for the next release
-2. We create a release branch
-3. We perform final testing and validation
-4. We publish the new version to npm
-5. We create a GitHub release with release notes
-
 ## Getting Help
 
-If you have questions or need help with your contributions, please:
-
 - Ask in the GitHub issue you're working on
-- Reach out to maintainers via email or [X](https://x.com/gabimoncha)
+- Reach out to maintainers via [X](https://x.com/gabimoncha)
 
-## Thank You
-
-Your contributions are what make the open-source community great. Thank you for taking the time to help improve Cursor Rules CLI!
+Thank you for helping improve Cursor Rules CLI!
 </file>
 
 <file path="docs/CURSOR_RULES_GUIDE.md">
 # Comprehensive Guide to Using Cursor Rules
 > Made with ❤️ in Cursor IDE, dogfooding `cursor-rules`
 
-This guide provides detailed information on how to create, configure, and use Cursor rules effectively to enhance AI assistance in your projects.
+This guide provides detailed information on creating, configuring, and using Cursor rules effectively to enhance AI assistance in your projects.
 
 ## Understanding Cursor Rules
 
-Cursor rules are special markdown files that provide contextual information and guidelines to AI assistants in the Cursor IDE. They help the AI understand your project's structure, conventions, and preferences, leading to more accurate and helpful assistance.
+Cursor rules are special markdown files that provide contextual information and guidelines to AI assistants in the Cursor IDE, helping them understand your project's structure, conventions, and preferences.
 
 ## Rule Locations
 
-Cursor rules can be placed in two locations:
-
-1. **Project Root**: Place rules at your project's root directory for global visibility
-2. **`.cursor/rules/` Directory**: Place rules in this directory for organized rule management
+- **Project Root**: Global visibility
+- **`.cursor/rules/` Directory**: Recommended for organized management
 
 ## Rule File Format
-
-A typical Cursor rule follows this format:
 
 ```markdown
 ---
 description: typescript-conventions
-globs: **/*.ts
+globs: optional/path/pattern
 alwaysApply: boolean
 ---
 
@@ -954,174 +881,93 @@ alwaysApply: boolean
 Brief description of what this rule covers
 
 ## Content Section 1
-
 Detailed information and instructions...
 
 ## Content Section 2
-
 More detailed guidelines...
 ```
 
-### Key Components
-
-- **Metadata**: Configuration parameters enclosed in `---` tags at the top of the file
-- **Title**: Clear, descriptive title of the rule
-- **Description**: Brief explanation of the rule's purpose
-- **Content Sections**: Detailed information organized in sections
-
 ### Metadata Options
 
-- `description`: Tells AI Agent when to use this rule
+- `description`: Tells AI when to use this rule
 - `globs`: File pattern this rule applies to (e.g., `**/*.ts`)
-- `alwaysApply`: Auto-attach rule to every AI prompt or let Agent choose when (boolean)
+- `alwaysApply`: Whether to auto-attach rule to every AI prompt (boolean)
 
 ## Creating Effective Rules
 
-### 1. Be Specific
+1. **Be Specific**
+   ```markdown
+   ❌ "Follow good coding practices"
+   ✅ "Use camelCase for variables and PascalCase for classes"
+   ```
 
-Write clear, specific guidelines rather than general statements:
+2. **Include Examples**
+   ```markdown
+   ## API Endpoint Format
+   Endpoints should follow this pattern:
+   - GET /api/v1/resources
+   - POST /api/v1/resources
+   - GET /api/v1/resources/:id
+   ```
 
-```markdown
-❌ "Follow good coding practices"
-✅ "Use camelCase for variable names and PascalCase for class names"
-```
+3. **Structure Hierarchically**
+   ```markdown
+   ## Database Models
+   ### User Model
+   Fields: id, name, email...
+   ### Product Model
+   Fields: id, name, price...
+   ```
 
-### 2. Include Examples
-
-Provide examples that demonstrate the correct approach:
-
-```markdown
-## API Endpoint Format
-
-Endpoints should follow this pattern:
-- GET /api/v1/resources
-- POST /api/v1/resources
-- GET /api/v1/resources/:id
-```
-
-### 3. Structure Hierarchically
-
-Organize information in a logical hierarchy using markdown headings:
-
-```markdown
-## Database Models
-### User Model
-Fields: id, name, email...
-### Product Model
-Fields: id, name, price...
-```
-
-### 4. Reference Existing Files
-
-Point to example files in your codebase:
-
-```markdown
-[Button.tsx](md:/path/to/Button.tsx) for reference implementation
-```
+4. **Reference Existing Files**
+   ```markdown
+   @Button.tsx for reference implementation
+   ```
 
 ## Using Rules with Cursor CLI
 
-### Command Options
-
 ```bash
 # Basic usage
-cursor-rules [options]
+cursor-rules [command] [options]
 
-# Available options
---init          # Initialize Cursor rules in your project
---repomix       # Generate repository overview XML file
---list          # List all project rules
---force, -f     # Overwrite existing rules
---version, -V   # Display version number
---verbose       # Show detailed output
---quiet         # Reduce output to essentials
---help, -h      # Display help information
+# Available commands
+init          # Start the setup process
+list          # List all rules
+repomix       # Generate repository overview
+
+# Global options
+-q, --quiet     # Disable all output
+-v, --version   # Show version information
+--verbose       # Enable verbose logging
+--help, -h      # Display help
+
+# init command options
+-f, --force     # Overwrite existing rules
+-r, --repomix   # Generate repomix output
+-o, --overwrite # Overwrite selected rules
 ```
-
-### Adding Rules with the CLI
-
-```bash
-# Initialize default rules
-cursor-rules --init
-
-# Force overwrite of existing rules
-cursor-rules --force
-```
-
-### Customizing Rules
-
-After initialization, edit the generated rule files to customize them for your project:
-
-1. Open the rule files in your preferred editor
-2. Update the metadata section with appropriate values
-3. Modify the content to reflect your project's specifics
-4. Save the files
 
 ## Rule Templates
 
 Our CLI provides these default templates:
 
-### cursor-rules.md
+- **cursor-rules.md**: Meta-guidelines for using and managing rules
+- **project-structure.md**: Documents project organization and architecture
+- **task-list.md**: Conventions for tracking project tasks
 
-Provides meta-guidelines on how to use and manage Cursor rules in your project.
-
-### project-structure.md
-
-Documents your project's organization, architecture, and important directories.
-
-### task-list.md
-
-Establishes conventions for tracking project tasks using markdown checklists.
-
-## Advanced Usage
-
-### Combining with Repomix
-
-Generate a comprehensive overview of your repository structure:
-
-```bash
-cursor-rules --repomix
-```
-
-This creates an XML representation of your codebase that AI can use to understand your project better.
-
-### Creating Custom Rule Templates
-
-To create your own rule templates:
-
-1. Create a markdown file with your rule content
-2. Add appropriate metadata
-3. Place it in `.cursor/rules/templates/`
-
-### Rule Precedence
-
-When multiple rules apply to the same files:
-1. Rules with higher priority take precedence
-2. More specific glob patterns take precedence over general ones
-3. Rules in `.cursor/rules/` take precedence over rules in the project root
 
 ## Troubleshooting
 
-### Rule Not Being Applied
-
-- Check that the file is in the correct location
-- Verify that the glob pattern matches the files you're working with
-- Ensure the rule file has the correct format and metadata
-
-### Conflicting Rules
-
-If you have conflicting rules:
-- Review the priority settings of conflicting rules
-- Make glob patterns more specific to avoid overlap
-- Consider consolidating related rules into a single rule
+- **Rule Not Applied**: Check location, glob pattern, and format
+- **Conflicting Rules**: Review priority settings, make glob patterns more specific, or consolidate rules
 
 ## Best Practices
 
-1. **Start Simple**: Begin with basic rules and expand as needed
-2. **Review Regularly**: Update rules as your project evolves
-3. **Be Consistent**: Maintain consistency across all rules
-4. **Include Context**: Provide context for why certain patterns are preferred
-5. **Reference Documentation**: Link to official documentation when applicable
+1. Start simple, expand as needed
+2. Review and update rules as project evolves
+3. Maintain consistency across rules
+4. Provide context for preferred patterns
+5. Reference official documentation when applicable
 
 ## Additional Resources
 
@@ -1157,7 +1003,7 @@ If you have conflicting rules:
     "rules:lib": "cursor-rules",
     "clean": "rm -rf .cursor repomix-output.xml repomix.config.json"
   },
-  "dependencies": {
+  "devDependencies": {
     "@gabimoncha/cursor-rules": "workspace:*"
   }
 }
@@ -1320,7 +1166,7 @@ SOFTWARE.
     "example"
   ],
   "scripts": {
-    "repomix": "repomix --config repomix.config.json --quiet",
+    "repomix": "repomix --config repomix.config.json",
     "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
     "release": "bun publish --cwd cli --otp",
     "rules": "bun run --bun cursor-rules",
@@ -1345,16 +1191,16 @@ SOFTWARE.
 
 A command-line tool for managing AI-assisted guidance in your projects through Cursor IDE rules.
 
+<img src="https://github.com/user-attachments/assets/7ace785a-fb5f-4537-963c-68eea490def1" width="80%" height="80%"/>
+
 ## What are Cursor Rules?
 
-Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand:
+Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
 
 - Project structure and organization
 - Coding conventions and patterns
 - Task management approaches
 - Best practices specific to your codebase
-
-By adding Cursor rules to your project, you enhance the AI's capability to provide more relevant and context-aware assistance.
 
 ## Features
 
@@ -1362,115 +1208,71 @@ By adding Cursor rules to your project, you enhance the AI's capability to provi
 - 📋 **Template Rules**: Includes default rule templates for common use cases
 - 💬 **Interactive Setup**: Guided setup process using command-line prompts
 - 📊 **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
-- 📁 **Project Structure**: Creates standardized rule organization within projects
+- 📁 **Project Structure**: Creates standardized rule organization
 
 ## Installation
 
-### Global Installation
-
 ```bash
-# Using bun
+# Global install
+
+# bun
 bun add -g @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn global add @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install -g @gabimoncha/cursor-rules
-```
 
-### Project Installation
+# Project install
 
-```bash
-# Using bun
+# bun
 bun add -d @gabimoncha/cursor-rules
-```
-```bash
-# Using yarn
+
+# yarn
 yarn add -D @gabimoncha/cursor-rules
-```
-```bash
-# Using npm
+
+# npm
 npm install --save-dev @gabimoncha/cursor-rules
 ```
 
 ## Usage
 
-### Initialize Cursor Rules
-
-Add default Cursor rules to your project:
-
 ```bash
-cursor-rules --init
-```
+# Initialize cursor rules
+cursor-rules init
 
-This will:
-1. Create a `.cursor/rules` directory in your project
-2. Add default rule templates (cursor-rules.md, project-structure.md, task-list.md)
-3. Guide you through customizing these templates for your project
+# Generate repomix file
+cursor-rules repomix
 
-### Generate Repository Overview
+# Initialize and generate repomix
+cursor-rules init -r
 
-Create a Repomix XML file for enhanced AI understanding of your codebase:
-
-```bash
-cursor-rules --repomix
-```
-
-### Available Commands
-
-```bash
-# Start CLI app
-cursor-rules --init
-```
-```bash
-# Generate repomix with custom config file
-cursor-rules --repomix
-```
-```bash
-# Start CLI and confirm repomix
-cursor-rules --init --repomix
-```
-```bash
 # Force overwrite existing rules
-cursor-rules --force
-```
-```bash
+cursor-rules init -f
+
 # List existing rules
-cursor-rules --list
-```
-```bash
-# Display the current version
+cursor-rules list
+
+# Display version or help
 cursor-rules --version
-```
-```bash
-# Show help information
 cursor-rules --help
 ```
 
 ## Default Rule Templates
 
-The CLI provides three default rule templates:
+The CLI provides three default templates:
 
-### 1. cursor-rules.md
-Guidelines for adding and organizing AI rules in your project.
-
-### 2. task-list.md
-Framework for tracking project progress with markdown task lists.
-
-### 3. project-structure.md
-Empty template for your project's structure. Can be updated by AI after running repomix output default instructions
+- **cursor-rules.md**: Guidelines for adding and organizing AI rules
+- **task-list.md**: Framework for tracking project progress with task lists
+- **project-structure.md**: Template for documenting project structure
 
 ## How Cursor Rules Work
 
-When you create Cursor rules in your project:
-
-1. The Cursor IDE detects these rules in the `.cursor/rules` directory or at the project root
-2. The AI assistant reads these rules to understand project context
-3. When you ask questions or request assistance, the AI follows the guidelines in your rules
-4. This results in more contextually appropriate and project-aware responses
+1. Cursor IDE detects rules in `.cursor/rules` directory or project root
+2. AI assistant reads these rules to understand project context
+3. When requesting assistance, AI follows guidelines in your rules
+4. Results in more contextually appropriate and project-aware responses
 
 ## Documentation
 
@@ -1480,8 +1282,6 @@ For more detailed documentation, visit:
 - [Contributing Guide](https://github.com/gabimoncha/cursor-rules-cli/blob/main/docs/CONTRIBUTING.md)
 
 ## Development
-
-To contribute to this project:
 
 ```bash
 # Clone the repository
@@ -1503,7 +1303,7 @@ MIT
 ## Acknowledgements
 
 - Idea inspired by **[Elie Steinbock](https://x.com/elie2222)** [OSS Cursor rules announcement](https://x.com/elie2222/status/1906985581835419915)
-- Codebase inspired from **[repomix](https://github.com/yamadashy/repomix.git)**
+- Codebase inspired from and using **[repomix](https://github.com/yamadashy/repomix.git)**
 </file>
 
 </files>

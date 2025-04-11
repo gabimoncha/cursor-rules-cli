@@ -80,9 +80,9 @@ export async function installRules(templateDir: string, overwrite: boolean = fal
 export function logInstallResult(changesMade: boolean) {
   if (changesMade) {
     logger.prompt.outro(pc.green("You're all set!"));
-    logger.quiet(pc.green("\nYou're all set!"));
+    logger.quiet(pc.green("\n You're all set!"));
   } else {
     logger.prompt.outro(pc.yellow("No rules were added."));
-    logger.quiet(pc.yellow("\nNo rules were added."));
+    logger.quiet(pc.yellow("\n No rules were added."));
   }
 }

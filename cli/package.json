@@ -1,7 +1,7 @@
 {
   "name": "@gabimoncha/cursor-rules",
   "description": "A CLI for bootstrapping Cursor rules to a project",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -52,6 +52,7 @@
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "commander": "^13.1.0",
+    "package-manager-detector": "^1.1.0",
     "repomix": "^0.3.1",
     "zod": "^3.24.2"
   },

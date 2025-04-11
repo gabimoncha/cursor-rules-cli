@@ -3,11 +3,12 @@ import util from 'node:util';
 import pc from 'picocolors';
 
 export const cursorRulesLogLevels = {
-  SILENT: -1, // No output
-  ERROR: 0, // error
-  WARN: 1, // warn
-  INFO: 2, // success, info, log, note
-  DEBUG: 3, // debug, trace
+  FORCE: -1, // always show output
+  SILENT: 0, // No output
+  ERROR: 1, // error
+  WARN: 2, // warn
+  INFO: 3, // success, info, log, note
+  DEBUG: 4, // debug, trace
 } as const;
 
 export type CursorRulesLogLevel = (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
@@ -76,55 +77,61 @@ class CursorRulesLogger {
 
   error(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.ERROR) {
-      console.error(pc.red(this.formatArgs(args)));
+      console.error(' ',pc.red(this.formatArgs(args)));
     }
   }
 
   warn(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.WARN) {
-      console.log(pc.yellow(this.formatArgs(args)));
+      console.log(' ', pc.yellow(this.formatArgs(args)));
     }
   }
 
   success(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.INFO) {
-      console.log(pc.green(this.formatArgs(args)));
+      console.log(' ', pc.green(this.formatArgs(args)));
     }
   }
 
   info(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.INFO) {
-      console.log(pc.cyan(this.formatArgs(args)));
+      console.log(' ', pc.cyan(this.formatArgs(args)));
     }
   }
 
   log(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.INFO) {
-      console.log(this.formatArgs(args));
+      console.log(' ', this.formatArgs(args));
     }
   }
 
   note(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.INFO) {
-      console.log(pc.dim(this.formatArgs(args)));
+      console.log(' ', pc.dim(this.formatArgs(args)));
     }
   }
 
   debug(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.DEBUG) {
-      console.log(pc.blue(this.formatArgs(args)));
+      console.log(' ', pc.blue(this.formatArgs(args)));
     }
   }
 
   trace(...args: unknown[]) {
     if (this.level >= cursorRulesLogLevels.DEBUG) {
-      console.log(pc.gray(this.formatArgs(args)));
+      console.log(' ', pc.gray(this.formatArgs(args)));
     }
   }
 
   quiet(...args: unknown[]) {
-    if (this.level == cursorRulesLogLevels.SILENT) {
-      console.log(pc.dim(this.formatArgs(args)));
+    if (this.level <= cursorRulesLogLevels.SILENT) {
+      console.log(' ', pc.dim(this.formatArgs(args)));
+    }
+  }
+
+  force(...args: unknown[]) {
+    if (this.level >= cursorRulesLogLevels.FORCE) {
+      console.log(' ', this.formatArgs(args));
     }
   }
 

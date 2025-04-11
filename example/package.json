@@ -7,7 +7,7 @@
     "rules:lib": "cursor-rules",
     "clean": "rm -rf .cursor repomix-output.xml repomix.config.json"
   },
-  "dependencies": {
+  "devDependencies": {
     "@gabimoncha/cursor-rules": "workspace:*"
   }
 }

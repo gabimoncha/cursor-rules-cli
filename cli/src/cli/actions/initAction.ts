@@ -31,7 +31,11 @@ export const runInitAction = async (opt: CliOptions) => {
       ],
       required: false,
     }),
-    runRepomix: async () => {
+    runRepomix: async ({ results }) => {
+      if (!results.rules?.includes('project-structure.md')) {
+        return false;
+      }
+
       if (opt.repomix) {
         return true;
       }

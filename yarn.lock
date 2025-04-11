@@ -32,6 +32,7 @@
   dependencies:
     "@clack/prompts" "^0.10.0"
     commander "^13.1.0"
+    package-manager-detector "^1.1.0"
     repomix "^0.3.1"
     zod "^3.24.2"
 
@@ -217,11 +218,11 @@
   integrity sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==
 
 "@types/bun@^1.2.8":
-  version "1.2.8"
-  resolved "https://registry.npmjs.org/@types/bun/-/bun-1.2.8.tgz"
-  integrity sha512-t8L1RvJVUghW5V+M/fL3Thbxcs0HwNsXsnTEBEfEVqGteiJToOlZ/fyOEaR1kZsNqnu+3XA4RI/qmnX4w6+S+w==
+  version "1.2.9"
+  resolved "https://registry.npmjs.org/@types/bun/-/bun-1.2.9.tgz"
+  integrity sha512-epShhLGQYc4Bv/aceHbmBhOz1XgUnuTZgcxjxk+WXwNyDXavv5QHD1QEFV0FwbTSQtNq6g4ZcV6y0vZakTjswg==
   dependencies:
-    bun-types "1.2.7"
+    bun-types "1.2.9"
 
 "@types/node@*", "@types/node@^22.14.0":
   version "22.14.0"
@@ -343,10 +344,10 @@ braces@^3.0.3, braces@~3.0.2:
   dependencies:
     fill-range "^7.1.1"
 
-bun-types@1.2.7:
-  version "1.2.7"
-  resolved "https://registry.npmjs.org/bun-types/-/bun-types-1.2.7.tgz"
-  integrity sha512-P4hHhk7kjF99acXqKvltyuMQ2kf/rzIw3ylEDpCxDS9Xa0X0Yp/gJu/vDCucmWpiur5qJ0lwB2bWzOXa2GlHqA==
+bun-types@1.2.9:
+  version "1.2.9"
+  resolved "https://registry.npmjs.org/bun-types/-/bun-types-1.2.9.tgz"
+  integrity sha512-dk/kOEfQbajENN/D6FyiSgOKEuUi9PWfqKQJEgwKrCMWbjS/S6tEXp178mWvWAcUSYm9ArDlWHZKO3T/4cLXiw==
   dependencies:
     "@types/node" "*"
     "@types/ws" "*"
@@ -581,7 +582,7 @@ eventsource-parser@^3.0.1:
 example@example:
   version "workspace:example"
   resolved "workspace:example"
-  dependencies:
+  devDependencies:
     "@gabimoncha/cursor-rules" "workspace:*"
 
 execa@^8.0.1:
@@ -1145,6 +1146,11 @@ package-json-from-dist@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmjs.org/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz"
   integrity sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==
+
+package-manager-detector@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/package-manager-detector/-/package-manager-detector-1.1.0.tgz"
+  integrity sha512-Y8f9qUlBzW8qauJjd/eu6jlpJZsuPJm2ZAV0cDVd420o4EdpH5RPdoCv+60/TdJflGatr4sDfpAL6ArWZbM5tA==
 
 parse-path@^7.0.0:
   version "7.0.1"

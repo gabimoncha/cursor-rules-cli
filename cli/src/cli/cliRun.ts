@@ -1,19 +1,15 @@
 import process from 'node:process';
-import path from 'node:path';
-import { Command, CommandOptions, Option } from 'commander';
+import { Command, Option } from 'commander';
 import pc from 'picocolors';
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
-import { installRules, logInstallResult } from '~/core/installRules.js';
 import { runInitAction, runInitForceAction } from './actions/initAction.js';
 // import { runMcpAction } from './actions/mcpAction';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
-import { TEMPLATE_DIR } from '~/shared/constants.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
-
-const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
+import { checkForUpdates } from '~/core/checkForUpdates.js';
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
@@ -45,6 +41,9 @@ export const program = new RootCommand();
 
 export const run = async () => {
   try {
+    // Check for updates in the background
+    const updateMessage = checkForUpdates();
+
     program
     .option('-v, --version', 'show version information')
     .action(commanderActionEndpoint);
@@ -103,6 +102,8 @@ export const run = async () => {
     });
 
     await program.parseAsync(process.argv);
+    
+    logger.force(await updateMessage);
   } catch (error) {
     handleError(error);
   }
@@ -127,9 +128,6 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
   }
 
   const cmd = command.name();
-
-  logger.trace('options:', options);
-  logger.trace('command:', cmd);
 
   // List command
 
@@ -161,6 +159,6 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
   //   return await runMcpAction();
   // }
 
-  logger.log(pc.bold(pc.green('\nCursor Rules')), 'a CLI for adding awesome IDE rules to your codebase\n');
+  logger.log(pc.bold(pc.green('\n Cursor Rules')), 'a CLI for adding awesome IDE rules to your codebase\n');
   command.outputHelp();
 };

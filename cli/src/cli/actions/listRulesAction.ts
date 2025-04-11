@@ -10,7 +10,7 @@ export async function runListRulesAction() {
     const cursorDir = path.join(process.cwd(), ".cursor", "rules");
 
     if (!existsSync(cursorDir)) {
-      logger.warn("\nNo .cursor/rules found.\n");
+      logger.warn("\n No .cursor/rules found.\n");
       throw new Error("folder empty");
 
     }
@@ -18,7 +18,7 @@ export async function runListRulesAction() {
     const files = await fs.readdir(cursorDir);
 
     if (files.length === 0) {
-      logger.warn("\n.cursor/rules folder is empty.\n");
+      logger.warn("\n .cursor/rules folder is empty.\n");
       throw new Error("folder empty");
     }
 
@@ -33,7 +33,7 @@ export async function runListRulesAction() {
     }
     
     logger.prompt.outro(``);
-    logger.quiet(`\nFound ${files.length} Cursor rules`);
+    logger.quiet(`\n Found ${files.length} Cursor rules`);
 
     return;
   } catch (error) {
@@ -41,13 +41,13 @@ export async function runListRulesAction() {
       logger.info("Run `cursor-rules init` to initialize the project.");
       logger.info("Run `cursor-rules help` to see all commands.");
       
-      logger.quiet(pc.yellow("\nNo .cursor/rules found."));
-      logger.quiet(pc.cyan("\nRun `cursor-rules init` to initialize the project."));
+      logger.quiet(pc.yellow("\n No .cursor/rules found."));
+      logger.quiet(pc.cyan("\n Run `cursor-rules init` to initialize the project."));
       return;
     }
 
     // Handle case where we might not be in a project (e.g., global install)
-    logger.error("\nFailed to list cursor rules:", error);
+    logger.error("\n Failed to list cursor rules:", error);
     process.exit(1);
   }
 }

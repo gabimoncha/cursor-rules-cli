@@ -1,4 +1,5 @@
 import * as fs from 'node:fs'
+import {logger} from '~/shared/logger.js';
 
 const mcpJsonPath = '.cursor/mcp.json'
 
@@ -14,7 +15,7 @@ const mcpJson = {
 export default function addRepomixServer() {
   if (!fs.existsSync(mcpJsonPath)) {
     fs.writeFileSync(mcpJsonPath, JSON.stringify(mcpJson, null, 2))
-    console.log('Created project MCP Server config file with Repomix server')
+    logger.trace('Created project MCP Server config file with Repomix server')
   } else {
     const existingMcpJson = JSON.parse(fs.readFileSync(mcpJsonPath, 'utf8'))
     
@@ -27,11 +28,11 @@ export default function addRepomixServer() {
       
       fs.writeFileSync(mcpJsonPath, JSON.stringify(existingMcpJson, null, 2))
 
-      console.log('Added repomix to existing project MCP Server config file')
+      logger.log('Added repomix to existing project MCP Server config file')
     } else {
-      console.log('Project MCP Server config file already has Repomix server')
+      logger.trace('Project MCP Server config file already has Repomix server')
     }
   }
-  console.log('\nGo to "Cursor Settings" > "MCP Servers" and make sure "repomix" is enabled.')
-  console.log('To use the tool type ')
+  logger.log('\n Go to "Cursor Settings" > "MCP Servers" and make sure "repomix" is enabled.')
+  logger.log('To use the tool type ')
 }

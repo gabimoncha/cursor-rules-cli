@@ -4,5 +4,5 @@ import { logger } from '~/shared/logger.js';
 
 export const runVersionAction = async (): Promise<void> => {
   const version = await getVersion();
-  logger.log(pc.dim(`\n📦 Cursor Rules v${version}\n`));
+  logger.log(pc.dim(`\n 📦 Cursor Rules v${version}\n`));
 };
