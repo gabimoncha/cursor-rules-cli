@@ -96,7 +96,7 @@ async function getLatestVersion(): Promise<{
 function getCacheDir() {
   // Use the user's home directory for the cache
   const homeDir = process.env.HOME ||  '.';
-  const cacheDir = path.join(checkIfLocal() ? homeDir : process.cwd(), '.cursor-rules', 'cache');
+  const cacheDir = path.join(checkIfLocal() ? process.cwd() : homeDir, '.cursor-rules-cli', 'cache');
   
   // Ensure the cache directory exists
   if (!existsSync(cacheDir)) {
