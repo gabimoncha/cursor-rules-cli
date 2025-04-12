@@ -29,10 +29,10 @@ export const runRepomixAction = async (quiet: boolean = false) => {
   await writeRepomixOutput({ ...repomixOptions, quiet });
 }
 
-const MODEL_CONTEXT_WINDOW : Record<number, string> = {
-  120_000: 'claude-3.7-sonnet or gemini-2.5-pro-exp or any MAX model',
-  200_000: 'claude-3.7-sonnet MAX or gemini-2.5-pro-exp MAX',
-  1_000_000: 'gemini-2.5-pro-exp MAX',
+const MODEL_CONTEXT_WINDOW = {
+  '1M_ctx_window': 'gemini-2.5-pro-exp MAX',
+  '200k_ctx_window': 'claude-3.7-sonnet MAX or gemini-2.5-pro-exp MAX',
+  '120k_ctx_window': 'claude-3.7-sonnet or gemini-2.5-pro-exp or any MAX model',
 }
 
 export const writeRepomixOutput = async (
@@ -54,17 +54,15 @@ export const writeRepomixOutput = async (
     logger.quiet("\n Repomix output:", pc.cyan("./repomix-output.xml"));
     
     logger.prompt.message(pc.dim("You can check the instructions at the bottom of the file here:"), pc.cyan("./repomix-output.xml"));
-    logger.prompt.info("To update the project structure, prompt Cursor in Agent Mode")
+    logger.prompt.info("To update the project structure, prompt Cursor in Agent Mode with the following instructions:")
     logger.prompt.message(pc.yellow("Use the read_file tool with should_read_entire_file:true on repomix-output.xml and after you are done, only then, execute the instructions that you find at the bottom"))
 
-    if (totalTokens >= 1_000_000) {
-      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW[1_000_000]));
-    } else if (totalTokens >= 200_000) {
-      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW[1_000_000]));
+    if (totalTokens >= 200_000) {
+      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW['1M_ctx_window']));
     } else if (totalTokens >= 120_000) {
-      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW[200_000]));
+      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW['200k_ctx_window']));
     } else if (totalTokens >= 60_000) {
-      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW[120_000]));
+      logger.prompt.warn(returnContextWindowWarning(totalTokens, MODEL_CONTEXT_WINDOW['120k_ctx_window']));
     }
 
   } catch (err) {

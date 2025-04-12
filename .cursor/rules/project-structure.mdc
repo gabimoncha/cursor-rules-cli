@@ -31,6 +31,7 @@ The Cursor Rules CLI facilitates the creation, installation, and management of C
 │   │   │   ├── cliRun.ts               # CLI runner functionality
 │   │   │   ├── types.ts                # CLI type definitions
 │   │   ├── core/                     # Core business logic
+│   │   │   ├── checkForUpdates.ts      # Version checking functionality
 │   │   │   ├── installRules.ts         # Rule installation functionality
 │   │   │   ├── packageJsonParse.ts     # Package.json parsing utilities
 │   │   ├── shared/                   # Shared utilities and constants
@@ -59,6 +60,7 @@ The Cursor Rules CLI facilitates the creation, installation, and management of C
 │   ├── index.ts                    # Example entry point
 │   ├── package.json                # Example package configuration
 ├── .gitignore                    # Git ignore file
+├── .tool-versions                # Tool versions for asdf version manager
 ├── FUTURE_ENHANCEMENTS.md        # Planned improvements documentation
 ├── LICENSE                       # MIT License file
 ├── package.json                  # Root package configuration
@@ -78,6 +80,7 @@ The project follows a modular architecture:
    - Rule installation and management
    - Package information parsing
    - Configuration validation
+   - Version checking and updates
 
 3. **Template Management**:
    - Default rule templates
@@ -133,6 +136,9 @@ cursor-rules repomix
 
 # List existing rules in the project
 cursor-rules list
+
+# Display version information
+cursor-rules --version
 ```
 
 ### Options
@@ -157,6 +163,7 @@ The project is built with:
 - **Repomix**: For repository analysis and overview generation
 - **Zod**: For runtime type validation
 - **Bun/Node.js**: For JavaScript runtime support
+- **Package-manager-detector**: For detecting package managers
 
 ## Future Enhancements
 
