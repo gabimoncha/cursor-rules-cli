@@ -1,0 +1,175 @@
+---
+description: Project structure and file organization guidelines
+globs: 
+alwaysApply: false
+---
+# Cursor Rules CLI
+
+A CLI tool to add and manage Cursor rules in your projects. This tool helps developers integrate AI-assisted guidance into their codebases through the Cursor IDE.
+
+## Purpose
+
+The Cursor Rules CLI facilitates the creation, installation, and management of Cursor rules - markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance AI's understanding of your project structure, coding conventions, and task management approach.
+
+## Key features
+
+- **Rule Installation**: Easily add Cursor rules to any project
+- **Template Rules**: Includes default rule templates for common use cases
+- **Interactive Setup**: Guided setup process using command-line prompts
+- **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
+- **Project Structure**: Creates standardized rule organization within projects
+
+## Directory structure
+
+```tree
+.
+├── cli/                          # Main CLI implementation package
+│   ├── bin/                        # CLI executable scripts
+│   ├── src/                        # Source code
+│   │   ├── cli/                      # CLI implementation components
+│   │   │   ├── actions/                # Command action handlers
+│   │   │   ├── cliRun.ts               # CLI runner functionality
+│   │   │   ├── types.ts                # CLI type definitions
+│   │   ├── core/                     # Core business logic
+│   │   │   ├── checkForUpdates.ts      # Version checking functionality
+│   │   │   ├── installRules.ts         # Rule installation functionality
+│   │   │   ├── packageJsonParse.ts     # Package.json parsing utilities
+│   │   ├── shared/                   # Shared utilities and constants
+│   │   │   ├── constants.ts            # Global constants
+│   │   │   ├── errorHandle.ts          # Error handling utilities
+│   │   │   ├── logger.ts               # Logging functionality
+│   │   ├── templates/                # Rule templates
+│   │   │   ├── rules-default/          # Default rule templates
+│   │   │       ├── cursor-rules.md       # Rules for cursor rules creation
+│   │   │       ├── project-structure.md  # Project structure guidelines
+│   │   │       ├── task-list.md          # Task management guidelines
+│   │   ├── index.ts                  # Main entry point
+│   ├── package.json                # CLI package configuration
+│   ├── tsconfig.json                # TypeScript configuration
+│   ├── tsconfig.build.json          # Build-specific TypeScript config
+│   ├── README.md                   # CLI-specific documentation
+├── docs/                         # Documentation
+│   ├── CLI_COMMANDS.md             # CLI command reference
+│   ├── CONTRIBUTING.md             # Contribution guidelines
+│   ├── CURSOR_RULES_GUIDE.md       # Comprehensive guide to cursor rules
+├── example/                      # Example project for testing
+│   ├── parent_folder/              # Example nested directory structure
+│   │   ├── child_folder/             # Child directory example
+│   │   ├── other_child_folder/       # Another child directory example
+│   ├── single_folder/              # Simple folder example
+│   ├── index.ts                    # Example entry point
+│   ├── package.json                # Example package configuration
+├── .gitignore                    # Git ignore file
+├── .tool-versions                # Tool versions for asdf version manager
+├── FUTURE_ENHANCEMENTS.md        # Planned improvements documentation
+├── LICENSE                       # MIT License file
+├── package.json                  # Root package configuration
+├── README.md                     # Main project documentation
+```
+
+## Architecture
+
+The project follows a modular architecture:
+
+1. **CLI Interface Layer**: 
+   - Uses Commander.js for command parsing
+   - Implements interactive prompts with @clack/prompts
+   - Handles user input and command routing
+
+2. **Core Logic Layer**:
+   - Rule installation and management
+   - Package information parsing
+   - Configuration validation
+   - Version checking and updates
+
+3. **Template Management**:
+   - Default rule templates
+   - Template customization
+
+4. **Repomix Integration**:
+   - Repository analysis
+   - XML output generation for AI consumption
+
+## Default Templates
+
+The CLI provides the following default templates:
+- **cursor-rules.md**: Guidelines for adding and organizing AI rules
+- **project-structure.md**: Overview of the project and organization
+- **task-list.md**: Guidelines for tracking project progress with task lists
+
+## Usage
+
+### Installation
+
+**Global Install:**
+```bash
+# Using bun
+bun add -g @gabimoncha/cursor-rules
+
+# Using yarn
+yarn global add @gabimoncha/cursor-rules
+
+# Using npm
+npm install -g @gabimoncha/cursor-rules
+```
+
+**Project Install:**
+```bash
+# Using bun
+bun add -d @gabimoncha/cursor-rules
+
+# Using yarn
+yarn add -D @gabimoncha/cursor-rules
+
+# Using npm
+npm install --save-dev @gabimoncha/cursor-rules
+```
+
+### Commands
+
+```bash
+# Initialize cursor rules in your project
+cursor-rules init
+
+# Generate repomix file for AI analysis
+cursor-rules repomix
+
+# List existing rules in the project
+cursor-rules list
+
+# Display version information
+cursor-rules --version
+```
+
+### Options
+
+```bash
+# Initialize cursor rules with default templates, overwriting rules and generating repomix-output.xml and repomix.config.file
+cursor-rules init --force
+
+# Initialize cursor rules, autoselect default repomix options generating repomix-output.xml and repomix.config.file
+cursor-rules init --repomix
+
+# Initialize cursor rules, overwrites selected rules
+cursor-rules init --overwrite
+```
+
+## Technical implementation
+
+The project is built with:
+- **TypeScript**: For type-safe code
+- **Commander.js**: For CLI command parsing
+- **@clack/prompts**: For interactive command-line prompts
+- **Repomix**: For repository analysis and overview generation
+- **Zod**: For runtime type validation
+- **Bun/Node.js**: For JavaScript runtime support
+- **Package-manager-detector**: For detecting package managers
+
+## Future Enhancements
+
+- Add rule validation and linting
+- Enhanced rule templates for different project types
+- Implement more specialized rule templates for different project types
+- Integration with more code analysis tools
+- Custom rule generation based on project analysis
+- UI for rule management

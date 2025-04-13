@@ -1,28 +1,9 @@
 {
   "name": "cursor-rules-cli",
-  "private": true,
+  "author": "gabimoncha <gabimoncha@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
-  },
-  "author": "gabimoncha <gabimoncha@gmail.com>",
-  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
-  "license": "MIT",
-  "workspaces": [
-    "cli",
-    "example"
-  ],
-  "scripts": {
-    "repomix": "repomix --config repomix.config.json",
-    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
-    "release": "bun publish --cwd cli --otp",
-    "rules": "bun run --bun cursor-rules",
-    "test:rules": "bun -cwd example rules",
-    "test:repomix": "bun -cwd example repomix",
-    "test:yolo": "bun -cwd example yolo"
   },
   "devDependencies": {
     "@types/bun": "^1.2.8",
@@ -31,5 +12,29 @@
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "bugs": {
+    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+  },
+  "type": "module",
+  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+  "license": "MIT",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "private": true,
+  "scripts": {
+    "repomix": "repomix --config repomix.config.json",
+    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
+    "release": "bun publish --cwd cli --otp",
+    "check": "bun run ./scripts/check-awesome-cursorrules.ts",
+    "rules": "bun run cursor-rules",
+    "test:rules": "bun -cwd example rules",
+    "test:repomix": "bun -cwd example repomix",
+    "test:yolo": "bun -cwd example yolo"
+  },
+  "workspaces": [
+    "cli",
+    "example"
+  ],
+  "dependencies": {
+    "out-of-character": "^1.2.2"
+  }
 }
