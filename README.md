@@ -66,6 +66,9 @@ cursor-rules init -f
 # List existing rules
 cursor-rules list
 
+# Audit existing rules
+cursor-rules audit
+
 # Display version or help
 cursor-rules --version
 cursor-rules --help
@@ -78,6 +81,10 @@ The CLI provides three default templates:
 - **cursor-rules.md**: Guidelines for adding and organizing AI rules
 - **task-list.md**: Framework for tracking project progress with task lists
 - **project-structure.md**: Template for documenting project structure
+
+## Awesome Rules Templates
+
+The CLI also provides rules from [awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules/tree/7e4db830d65c8951463863dd25cc39b038d34e02/rules-new) repository
 
 ## How Cursor Rules Work
 
