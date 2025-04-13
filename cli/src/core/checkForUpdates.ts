@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { existsSync, mkdirSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { logger } from '~/shared/logger.js';
 import { getPackageManager, getPackageName, getVersion } from '~/core/packageJsonParse.js';
 import semver from 'semver';
@@ -46,7 +46,7 @@ async function getLatestVersion(): Promise<{
     const cachedData = readCache();
 
     if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
-      writeCache({
+      await writeCache({
         latestVersion: cachedData.latestVersion,
         timestamp: Date.now()
       });
@@ -77,7 +77,7 @@ async function getLatestVersion(): Promise<{
     
     // Cache the result
     try {
-      writeCache({
+      await writeCache({
         latestVersion,
         timestamp: Date.now()
       });
@@ -94,13 +94,24 @@ async function getLatestVersion(): Promise<{
 
 // Get the cache directory path for storing update check results
 function getCacheDir() {
+  const isLocal = checkIfLocal();
+
   // Use the user's home directory for the cache
   const homeDir = process.env.HOME ||  '.';
-  const cacheDir = path.join(checkIfLocal() ? process.cwd() : homeDir, '.cursor-rules-cli', 'cache');
+  const cacheDir = path.join(isLocal ? process.cwd() : homeDir, '.cursor-rules-cli', 'cache');
+  
   
   // Ensure the cache directory exists
   if (!existsSync(cacheDir)) {
     mkdirSync(cacheDir, { recursive: true });
+  }
+
+  // Ensure .gitignore exists and add .cursor-rules-cli to it
+  if (isLocal) {
+    const gitignore = readFileSync(path.join(process.cwd(), '.gitignore'), 'utf-8');
+    if (!gitignore.includes('.cursor-rules-cli')) {
+      appendFileSync(path.join(process.cwd(), '.gitignore'), "\n.cursor-rules-cli");
+    }
   }
   
   return cacheDir;

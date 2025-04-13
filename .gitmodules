@@ -1,0 +1,3 @@
+[submodule "awesome-cursorrules"]
+	path = awesome-cursorrules
+	url = https://github.com/PatrickJS/awesome-cursorrules.git

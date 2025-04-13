@@ -10,6 +10,7 @@ import type { CliOptions } from './types.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 import { checkForUpdates } from '~/core/checkForUpdates.js';
+import { runAuditRulesAction } from '~/cli/actions/auditRulesAction.js';
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
@@ -60,6 +61,11 @@ export const run = async () => {
     program
     .command('list')
     .description('list all rules')
+    .action(commanderActionEndpoint);
+
+    program
+    .command('audit')
+    .description('check for vulnerabilities in the codebase')
     .action(commanderActionEndpoint);
 
     program
@@ -133,6 +139,13 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
 
   if (cmd === 'list') {
     await runListRulesAction();
+    return;
+  }
+
+  // List command
+
+  if (cmd === 'audit') {
+    await runAuditRulesAction();
     return;
   }
 

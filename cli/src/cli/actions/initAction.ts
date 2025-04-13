@@ -1,3 +1,4 @@
+import fs from "node:fs/promises";
 import { cancel, select, multiselect, group as groupPrompt, isCancel, confirm } from '@clack/prompts';
 import path from 'path';
 import { runRepomixAction, writeRepomixConfig, writeRepomixOutput } from '~/cli/actions/repomixAction.js';
@@ -5,6 +6,7 @@ import { CliOptions } from '~/cli/types.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
 import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
+import {readFileSync} from "node:fs";
 
 const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
 
@@ -19,16 +21,20 @@ export const runInitAction = async (opt: CliOptions) => {
     return;
   }
 
+  let templateFiles = await fs.readdir(rulesDir);
+
   let result = false;
 
   const group = await groupPrompt({
     rules: () => multiselect({
       message: 'Which rules would you like to add?',
-      options: [
-        { value: 'cursor-rules.md', label: 'Cursor Rules', hint: 'Defines how Cursor should add new rules to your codebase' },
-        { value: 'task-list.md', label: 'Task List', hint: 'For creating and managing task lists' },
-        { value: 'project-structure.md', label: 'Project structure' },
-      ],
+      options: templateFiles.map(file => ({
+        value: file,
+        // Capitalizes the first letter of each word
+        label: file.split('.')[0].split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        // Hints the rule description
+        hint: readFileSync(path.join(rulesDir, file), 'utf-8').split('\n')[1].split(':')[1].trim()
+      })),
       required: false,
     }),
     runRepomix: async ({ results }) => {

@@ -28,9 +28,15 @@ export async function installRules(templateDir: string, overwrite: boolean = fal
     let existingFiles = await fs.readdir(cursorDir);
 
     for (const file of templateFiles) {
-      if (!file.endsWith(".md")) continue;
+      let fileName;
 
-      const fileName = file + 'c';
+      if (file.endsWith('.md')) {
+        fileName = file + 'c';
+      } else if (file.endsWith('.mdc')){
+        fileName = file;
+      } else {
+        continue;
+      }
 
       const source = path.join(templateDir, file);
       const destination = path.join(cursorDir, fileName);
