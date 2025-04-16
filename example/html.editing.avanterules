@@ -1,0 +1,7 @@
+{%- if project_context -%}
+<project_context>
+{{project_context}}
+</project_context>
+{%- endif %}
+
+- follow HTML5 best practices  
