@@ -1,11 +1,12 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { existsSync, mkdirSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { logger } from '~/shared/logger.js';
 import { getPackageManager, getPackageName, getVersion } from '~/core/packageJsonParse.js';
 import semver from 'semver';
 import { execSync } from 'child_process';
 import pc from 'picocolors';
+import { fileExists } from '~/core/fileExists.js';
 
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -94,13 +95,28 @@ async function getLatestVersion(): Promise<{
 
 // Get the cache directory path for storing update check results
 function getCacheDir() {
+  const isLocal = checkIfLocal();
+
   // Use the user's home directory for the cache
   const homeDir = process.env.HOME ||  '.';
-  const cacheDir = path.join(checkIfLocal() ? process.cwd() : homeDir, '.cursor-rules-cli', 'cache');
+  const cacheDir = path.join(isLocal ? process.cwd() : homeDir, '.cursor-rules-cli', 'cache');
   
   // Ensure the cache directory exists
   if (!existsSync(cacheDir)) {
     mkdirSync(cacheDir, { recursive: true });
+  }
+
+  // Ensure .gitignore exists and add .cursor-rules-cli to it
+  if (isLocal) {
+    const gitignorePath = path.join(process.cwd(), '.gitignore');
+    const hasGitignore = fileExists(gitignorePath);
+    if (!hasGitignore) {
+      return cacheDir;
+    }
+    const gitignore = readFileSync(gitignorePath, 'utf-8');
+    if (!gitignore.includes('.cursor-rules-cli')) {
+      appendFileSync(gitignorePath, "\n.cursor-rules-cli");
+    }
   }
   
   return cacheDir;

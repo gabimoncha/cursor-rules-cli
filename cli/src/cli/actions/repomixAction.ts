@@ -4,35 +4,42 @@ import pc from 'picocolors';
 import { CliOptions as RepomixCliOptions, runCli as repomixAction, RepomixConfig } from 'repomix';
 import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
+import { fileExists } from '~/core/fileExists.js';
 
-export const runRepomixAction = async (quiet: boolean = false) => {
-  logger.prompt.step('Creating repomix config...');
-
+export const runRepomixAction = async (quiet: boolean = false) => {  
   const repomixOptions = {
     ...REPOMIX_OPTIONS,
     compress: true,
     removeEmptyLines: true,
   }
 
-  const yoloRepomixConfig: RepomixConfig = {
-    ...DEFAULT_REPOMIX_CONFIG,
-    output: {
-      ...DEFAULT_REPOMIX_CONFIG.output,
-      ...repomixOptions,
+  const hasConfigFile = fileExists(path.join(process.cwd(), 'repomix.config.json'));
+  
+  if (!hasConfigFile) {
+    logger.prompt.step('Creating repomix config...');
+    logger.trace('repomix options:', repomixOptions);
+    const yoloRepomixConfig: RepomixConfig = {
+      ...DEFAULT_REPOMIX_CONFIG,
+      output: {
+        ...DEFAULT_REPOMIX_CONFIG.output,
+        ...repomixOptions,
+      }
     }
+    
+    await writeRepomixConfig(yoloRepomixConfig);
+  } else {
+    logger.trace('Skipping repomix config creation...');
   }
-
-  logger.trace('repomix options:', repomixOptions);
-
-  await writeRepomixConfig(yoloRepomixConfig);
 
   await writeRepomixOutput({ ...repomixOptions, quiet });
 }
 
+// Check https://docs.cursor.com/settings/models#context-window-sizes
 const MODEL_CONTEXT_WINDOW = {
   '1M_ctx_window': 'gemini-2.5-pro-exp MAX',
   '200k_ctx_window': 'claude-3.7-sonnet MAX or gemini-2.5-pro-exp MAX',
-  '120k_ctx_window': 'claude-3.7-sonnet or gemini-2.5-pro-exp or any MAX model',
+  '128k_ctx_window': 'gpt-4.1, o3, o4-mini, gemini-2.5-flash-preview-04-17 or any MAX model',
+  '120k_ctx_window': 'gpt-4.1, o3, o4-mini or any of the claude or gemini models',
 }
 
 export const writeRepomixOutput = async (
@@ -66,6 +73,7 @@ export const writeRepomixOutput = async (
     }
 
   } catch (err) {
+    logger.debug(err);
     logger.prompt.warn("Error running repomix!");
   }
 }

@@ -2,6 +2,7 @@ import { cancel, select, multiselect, group as groupPrompt, isCancel, confirm } 
 import path from 'path';
 import { runRepomixAction, writeRepomixConfig, writeRepomixOutput } from '~/cli/actions/repomixAction.js';
 import { CliOptions } from '~/cli/types.js';
+import { fileExists } from '~/core/fileExists.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
 import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
@@ -63,19 +64,6 @@ export const runInitAction = async (opt: CliOptions) => {
         required: false,
       });
     },
-    saveRepomixConfig: async ({results}) => {
-      if (!results.runRepomix) {
-        return false;
-      }
-
-      if (opt.repomix) {
-        return true;
-      }
-
-      return confirm({
-        message: 'Save repomix config?',
-      });
-    },
   },
   {
     // On Cancel callback that wraps the group
@@ -107,7 +95,9 @@ export const runInitAction = async (opt: CliOptions) => {
     ...formattedOptions
   }
 
-  if (Boolean(group.saveRepomixConfig)) {
+  const hasConfigFile = fileExists(path.join(process.cwd(), 'repomix.config.json'));
+
+  if (Boolean(group.runRepomix) && !hasConfigFile) {
     const repomixConfig = {
       ...DEFAULT_REPOMIX_CONFIG,
       output: {

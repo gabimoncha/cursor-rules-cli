@@ -5,7 +5,7 @@
   "scripts": {
     "rules:dev": "bun run --bun cursor-rules",
     "rules:lib": "cursor-rules",
-    "clean": "rm -rf .cursor repomix-output.xml repomix.config.json"
+    "clean": "rm -rf repomix-output.xml repomix.config.json && find .cursor/rules -mindepth 1 ! -name 'bad-rule.mdc' -exec rm -rf -- {} +"
   },
   "devDependencies": {
     "@gabimoncha/cursor-rules": "workspace:*"
