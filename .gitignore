@@ -45,3 +45,4 @@ coverage/
 
 # yarn
 .yarn/
+example/.cursor*

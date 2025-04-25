@@ -7,7 +7,22 @@ A CLI tool for managing AI-assisted guidance in your projects through Cursor IDE
 
 ## What are Cursor Rules?
 
-Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand project structure, coding conventions, and best practices.
+[YouTube presentation](https://www.youtube.com/watch?v=RphQhNX9xB0)
+
+Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
+
+- Project structure and organization
+- Coding conventions and patterns
+- Task management approaches
+- Best practices specific to your codebase
+
+## Features
+
+- 🚀 **Rule Installation**: Easily add Cursor rules to any project
+- 📋 **Template Rules**: Includes default rule templates for common use cases
+- 💬 **Interactive Setup**: Guided setup process using command-line prompts
+- 📊 **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
+- 📁 **Project Structure**: Creates standardized rule organization
 
 ## Installation
 

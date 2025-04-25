@@ -7,6 +7,8 @@ A command-line tool for managing AI-assisted guidance in your projects through C
 
 ## What are Cursor Rules?
 
+[YouTube presentation](https://www.youtube.com/watch?v=RphQhNX9xB0)
+
 Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
 
 - Project structure and organization
