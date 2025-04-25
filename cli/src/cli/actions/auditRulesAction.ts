@@ -1,50 +1,72 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, PathOrFileDescriptor, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import pc from "picocolors";
 import { logger } from "~/shared/logger.js";
 import outOfChar from 'out-of-character';
+import { confirm, isCancel } from "@clack/prompts";
+import { matchRegex } from "~/audit/matchRegex.js";
+
+const rootRulesFilter = (file: string) => {
+  return file === '.windsurfrules' || file === '.cursorrules'
+  || file.startsWith('.clinerules') 
+  || file.endsWith('.avanterules')
+}
+
+const folderRules = [
+  '.cursor/rules',
+  '.github/prompts',
+]
 
 
 export async function runAuditRulesAction() {
   try {
     let count = 0;
+    let vulnerableFiles:PathOrFileDescriptor[] = [];
 
-    // check for .github/copilot-instructions.md file
-    count = checkFile('.github/copilot-instructions.md', path.join(process.cwd(), '.github/copilot-instructions.md'), count);
-    
-    // check for .windsurfrules file
-    count = checkFile('.windsurfrules', path.join(process.cwd(), '.windsurfrules'), count);
-    
-    // check for .clinerules and .clinerules-{mode} files
-    const clineRuleFiles = (await fs.readdir(process.cwd())).filter(file => file.startsWith('.clinerules'));
+    const rootRulesFiles = readdirSync(process.cwd()).filter(rootRulesFilter);
 
-    for(const file of clineRuleFiles) {
-      count = checkFile(file, path.join(process.cwd(), file), count);
-    }
+    rootRulesFiles.forEach((file) => {
+      count = checkFile(file, path.join(process.cwd(), file), count, vulnerableFiles);
+    });
 
-    // check for .cursor/rules files
-    const cursorRulesDir = path.join(process.cwd(), ".cursor/rules");
-    
-    if (!existsSync(cursorRulesDir)) {
-      logger.quiet(pc.yellow("\n No .cursor/rules found."));
-      return;
-    }
+    folderRules.forEach((folder) => {
+      const ruleDir = path.join(process.cwd(), folder);
 
-    const files = await fs.readdir(cursorRulesDir);
+      if (!existsSync(ruleDir)) {
+        logger.debug(pc.yellow(`\n No ${folder} folder found.`));
+        logger.quiet(pc.yellow(`\n No ${folder} folder found.`));
+        return;
+      }
 
-    if (files.length === 0) {
-      logger.quiet(pc.yellow("\n No .cursor/rules found."));
-      return;
-    }
-
-    for(const file of files) {
-      count = checkFile(file, path.join(cursorRulesDir, file), count);
-    }
+      const files = readdirSync(ruleDir);
+      files.forEach((file) => {
+        count = checkFile(file, path.join(ruleDir, file), count, vulnerableFiles);
+      });
+    });
 
     logger.force(`\n Found ${count} vulnerabilit${count === 1 ? 'y' : 'ies'}`);
-    return;
+
+    console.log('vulnerableFiles:', vulnerableFiles);
+
+    if (vulnerableFiles.length > 0) {
+      const confirmVulnerableFiles = await confirm({
+        message: `\n Do you want to clean these files? (will remove all non-ASCII characters)`,
+      });
+
+      if (isCancel(confirmVulnerableFiles)) {
+        process.exit(0);
+      }
+
+      if (confirmVulnerableFiles) {
+        for (const file of vulnerableFiles) {
+          let text = readFileSync(file).toString();
+          writeFileSync(file, text.replace(/[^\x00-\x7F]/g, ''));
+        }
+      }
+    }
   } catch (error) {
+    console.log(error);
     if((error as Error).message === "folder empty") {
       logger.info("Run `cursor-rules init` to initialize the project.");
       logger.info("Run `cursor-rules help` to see all commands.");
@@ -60,16 +82,22 @@ export async function runAuditRulesAction() {
   }
 }
 
-function checkFile(file: string, filePath: string, count: number) {
+function checkFile(file: string, filePath: PathOrFileDescriptor, count: number, vulnerableFiles: PathOrFileDescriptor[]) {
   try {
-    let text = readFileSync(filePath).toString();
-    let result = outOfChar.detect(text);
-    
-    if (result?.length > 0) {
-      logger.prompt.message(`${pc.red('Vulnerable')} ${path.relative(process.cwd(), filePath)}`);
+    const text = readFileSync(filePath).toString();
+    const result = outOfChar.detect(text);
+
+    const matchedRegex = matchRegex(text);
+
+    const matched = Object.values(matchedRegex).some(matched => !!matched);
+    const isVulnerable = result?.length > 0 || matched;
+    if (isVulnerable) {
+      logger.prompt.message(`${pc.red('Vulnerable')} ${path.relative(process.cwd(), filePath.toString())}`);
       count++;
+      vulnerableFiles.push(filePath);
     }
   } catch(e) {
+    console.log(e);
     logger.quiet(pc.yellow(`\n No ${file} found.`));
   }
 
