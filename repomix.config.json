@@ -31,7 +31,9 @@
       "lib",
       "*.log",
       "repomix*",
-      "*/repomix*"
+      "*/repomix*",
+      "awesome-cursorrules",
+      ".github/workflows/snyk-security.yml"
     ]
   },
   "security": {

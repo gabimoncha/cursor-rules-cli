@@ -1,72 +1,69 @@
 {
-  "name": "@gabimoncha/cursor-rules",
-  "description": "A CLI for bootstrapping Cursor rules to a project",
-  "version": "0.1.6",
-  "type": "module",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
-  },
-  "author": "gabimoncha <gabimoncha@gmail.com>",
-  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "/lib",
-    "/bin",
-    "!src"
-  ],
-  "bin": {
-    "cursor-rules": "bin/cursor-rules.js"
-  },
-  "scripts": {
-    "clean": "rimraf lib",
-    "prepare": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-templates",
-    "copy-templates": "bun run ../scripts/copy-templates.ts"
-  },
-  "keywords": [
-    "repository",
-    "cli",
-    "generative-ai",
-    "ai",
-    "llm",
-    "source-code",
-    "code-analysis",
-    "development-tool",
-    "cursor",
-    "cursor-directory",
-    "cursor-rules",
-    "cursor-rules-cli",
-    "cursor-ide",
-    "cursor-editor",
-    "cursor-rules-generator",
-    "cursor-rules-generator-cli"
-  ],
-  "dependencies": {
-    "@clack/prompts": "^0.10.0",
-    "commander": "^13.1.0",
+	"name": "@gabimoncha/cursor-rules",
+	"description": "A CLI for bootstrapping Cursor rules to a project",
+	"version": "0.1.8",
+	"type": "module",
+	"main": "./lib/index.js",
+	"types": "./lib/index.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+	},
+	"bugs": {
+		"url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+	},
+	"author": "gabimoncha <gabimoncha@gmail.com>",
+	"homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": ["/lib", "/bin", "!src"],
+	"bin": {
+		"cursor-rules": "bin/cursor-rules.js"
+	},
+	"scripts": {
+		"clean": "rimraf lib",
+		"prepare": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-markdown",
+		"copy-markdown": "bun run ../scripts/copy-markdown.ts"
+	},
+	"keywords": [
+		"repository",
+		"cli",
+		"generative-ai",
+		"ai",
+		"llm",
+		"source-code",
+		"code-analysis",
+		"development-tool",
+		"cursor",
+		"cursor-directory",
+		"cursor-rules",
+		"cursor-rules-cli",
+		"cursor-ide",
+		"cursor-editor",
+		"cursor-rules-generator",
+		"cursor-rules-generator-cli"
+	],
+	"dependencies": {
+		"@clack/prompts": "^0.10.0",
+		"commander": "^13.1.0",
     "out-of-character": "^1.2.2",
-    "package-manager-detector": "^1.1.0",
-    "repomix": "^0.3.1",
-    "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.8",
-    "@types/node": "^22.14.0",
-    "rimraf": "^6.0.1",
-    "tsc-alias": "^1.8.13",
-    "typescript": "^5.8.3"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
-  "directories": {
-    "example": "example",
-    "lib": "lib"
-  }
+		"package-manager-detector": "^1.1.0",
+		"regex": "^6.0.1",
+		"repomix": "^0.3.3",
+		"zod": "^3.24.2"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.2.10",
+		"@types/node": "^22.14.0",
+		"rimraf": "^6.0.1",
+		"tsc-alias": "^1.8.13",
+		"typescript": "^5.8.3"
+	},
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+	"directories": {
+		"example": "example",
+		"lib": "lib"
+	}
 }
