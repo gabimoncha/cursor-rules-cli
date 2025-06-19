@@ -46,3 +46,4 @@ coverage/
 # yarn
 .yarn/
 example/.cursor*
+.cursor-rules-cli

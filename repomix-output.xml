@@ -1,5 +1,5 @@
 This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
-The content has been processed where comments have been removed, empty lines have been removed, content has been compressed (code blocks are separated by ⋮---- delimiter).
+The content has been processed where empty lines have been removed, content has been compressed (code blocks are separated by ⋮---- delimiter).
 
 <file_summary>
 This section contains a summary of this file.
@@ -15,6 +15,7 @@ The content is organized as follows:
 1. This summary section
 2. Repository information
 3. Directory structure
+4. Repository files (if enabled)
 4. Repository files, each consisting of:
   - File path as an attribute
   - Full contents of the file
@@ -34,10 +35,9 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Files matching these patterns are excluded: cli/src/wip, cli/src/templates/repomix-instructions, cli/src/actions/defaultAction.ts, cli/src/add-repomix-server.ts, PROJECT_*.md, .cursor, lib, *.log, repomix*, */repomix*
+- Files matching these patterns are excluded: cli/src/wip, cli/src/templates/repomix-instructions, cli/src/actions/defaultAction.ts, cli/src/add-repomix-server.ts, PROJECT_*.md, .cursor, lib, *.log, repomix*, */repomix*, awesome-cursorrules, .github/workflows/snyk-security.yml, .cursor, lib, dist, build, *.log, repomix*, yarn.lock, package-lock.json, bun.lockb, bun.lock, pnpm-lock.yaml
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
-- Code comments have been removed from supported file types
 - Empty lines have been removed from all files
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 </notes>
@@ -63,6 +63,7 @@ cli/
       types.ts
     core/
       checkForUpdates.ts
+      fileExists.ts
       installRules.ts
       packageJsonParse.ts
     shared/
@@ -93,6 +94,8 @@ example/
     index.ts
   index.ts
   package.json
+scripts/
+  copy-markdown.ts
 .gitignore
 .tool-versions
 FUTURE_ENHANCEMENTS.md
@@ -136,15 +139,34 @@ console.error('Fatal Error:', error);
 </file>
 
 <file path="cli/src/cli/actions/initAction.ts">
-import { cancel, select, multiselect, group as groupPrompt, isCancel, confirm } from '@clack/prompts';
-import path from 'path';
-import { runRepomixAction, writeRepomixConfig, writeRepomixOutput } from '~/cli/actions/repomixAction.js';
-import { CliOptions } from '~/cli/types.js';
-import { installRules, logInstallResult } from '~/core/installRules.js';
-import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
-import { logger } from '~/shared/logger.js';
+import path from "node:path";
+import {
+	cancel,
+	group as groupPrompt,
+	isCancel,
+	multiselect,
+	select,
+} from "@clack/prompts";
+import {
+	runRepomixAction,
+	writeRepomixConfig,
+	writeRepomixOutput,
+} from "~/cli/actions/repomixAction.js";
+import type { CliOptions } from "~/cli/types.js";
+import { fileExists } from "~/core/fileExists.js";
+import { installRules, logInstallResult } from "~/core/installRules.js";
+import {
+	DEFAULT_REPOMIX_CONFIG,
+	REPOMIX_OPTIONS,
+	TEMPLATE_DIR,
+} from "~/shared/constants.js";
+import { logger } from "~/shared/logger.js";
 ⋮----
 export const runInitAction = async (opt: CliOptions) =>
+⋮----
+// On Cancel callback that wraps the group
+// So if the user cancels one of the prompts in the group this function will be called
+⋮----
 export async function runInitForceAction(opt: CliOptions)
 async function confirmYoloMode()
 </file>
@@ -156,20 +178,34 @@ import path from "node:path";
 import pc from "picocolors";
 import { logger } from "~/shared/logger.js";
 export async function runListRulesAction()
+⋮----
+// Create .cursor directory if it doesn't exist
+⋮----
+// Handle case where we might not be in a project (e.g., global install)
 </file>
 
 <file path="cli/src/cli/actions/repomixAction.ts">
-import path from 'path';
-import { writeFileSync } from 'fs';
-import pc from 'picocolors';
-import { CliOptions as RepomixCliOptions, runCli as repomixAction, RepomixConfig } from 'repomix';
-import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
-import { logger } from '~/shared/logger.js';
-export const runRepomixAction = async (quiet: boolean = false) =>
+import { writeFileSync } from "node:fs";
+import path from "node:path";
+import pc from "picocolors";
+import {
+	type CliOptions as RepomixCliOptions,
+	type RepomixConfig,
+	runCli as repomixAction,
+} from "repomix";
+import { fileExists } from "~/core/fileExists.js";
+import {
+	DEFAULT_REPOMIX_CONFIG,
+	REPOMIX_OPTIONS,
+	TEMPLATE_DIR,
+} from "~/shared/constants.js";
+import { logger } from "~/shared/logger.js";
+export const runRepomixAction = async (quiet = false) =>
+// Check https://docs.cursor.com/settings/models#context-window-sizes
 ⋮----
 export const writeRepomixOutput = async (
-  opt: RepomixCliOptions,
-  instructionFile: string = 'project-structure'
+	opt: RepomixCliOptions,
+	instructionFile = "project-structure",
 ) =>
 export const writeRepomixConfig = async (config: RepomixConfig) =>
 const returnContextWindowWarning = (totalTokens: number, model: string) =>
@@ -189,17 +225,34 @@ import pc from 'picocolors';
 import { handleError } from '~/shared/errorHandle.js';
 import { logger, cursorRulesLogLevels } from '~/shared/logger.js';
 import { runInitAction, runInitForceAction } from './actions/initAction.js';
+// import { runMcpAction } from './actions/mcpAction';
 import { runVersionAction } from './actions/versionAction.js';
 import type { CliOptions } from './types.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 import { checkForUpdates } from '~/core/checkForUpdates.js';
+// Semantic mapping for CLI suggestions
+// This maps conceptually related terms (not typos) to valid options
 ⋮----
 class RootCommand extends Command
 ⋮----
 createCommand(name: string)
 ⋮----
+// Basic Options
+⋮----
 export const run = async () =>
+⋮----
+// Check for updates in the background
+⋮----
+// Rules Options
+⋮----
+// program
+// .command('mcp')
+// .description('run as a MCP server')
+// .action(runCli);
+// Custom error handling function
+⋮----
+// Check if this is an unknown option error
 ⋮----
 // Check if the option has a semantic match
 ⋮----
@@ -211,44 +264,88 @@ const commanderActionEndpoint = async (options: CliOptions =
 export const runCli = async (options: CliOptions =
 ⋮----
 // List command
+⋮----
+// Init command
+⋮----
+// MCP command (not implemented yet)
+// if (options.mcp) {
+//   return await runMcpAction();
+// }
 </file>
 
 <file path="cli/src/cli/types.ts">
 import type { OptionValues } from 'commander';
 export interface CliOptions extends OptionValues {
+  // Basic Options
   list?: boolean;
   version?: boolean;
+  // Rules Options
   force?: boolean;
   init?: boolean;
   repomix?: boolean;
+  // MCP
+  // mcp?: boolean;
+  // Other Options
   verbose?: boolean;
   quiet?: boolean;
 }
+⋮----
+// Basic Options
+⋮----
+// Rules Options
+⋮----
+// MCP
+// mcp?: boolean;
+// Other Options
 </file>
 
 <file path="cli/src/core/checkForUpdates.ts">
-import path from 'path';
-import fs from 'fs/promises';
-import { existsSync, mkdirSync, readFileSync } from 'fs';
-import { logger } from '~/shared/logger.js';
-import { getPackageManager, getPackageName, getVersion } from '~/core/packageJsonParse.js';
-import semver from 'semver';
-import { execSync } from 'child_process';
-import pc from 'picocolors';
-⋮----
+import { execSync } from "node:child_process";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
+import pc from "picocolors";
+import semver from "semver";
+import { fileExists } from "~/core/fileExists.js";
+import {
+	getPackageManager,
+	getPackageName,
+	getVersion,
+} from "~/core/packageJsonParse.js";
+import { logger } from "~/shared/logger.js";
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+// Function to check for updates and notify user
 export async function checkForUpdates()
 ⋮----
 // Silently fail if update check fails
 ⋮----
 async function getLatestVersion(): Promise<
+⋮----
+// Compare versions (simple string comparison works for semver format)
+⋮----
+// Cache the result
+⋮----
+// Get the cache directory path for storing update check results
 function getCacheDir()
+⋮----
+// Use the user's home directory for the cache
+⋮----
+// Ensure the cache directory exists
+⋮----
+// Ensure .gitignore exists and add .cursor-rules-cli to it
+⋮----
 function checkIfLocal()
 type CachedData = {
-  latestVersion: string;
-  timestamp: number;
-}
+	latestVersion: string;
+	timestamp: number;
+};
 function readCache(): CachedData | null
 async function writeCache(data: CachedData)
+</file>
+
+<file path="cli/src/core/fileExists.ts">
+import { statSync } from "node:fs";
+export const fileExists = (path: string) =>
 </file>
 
 <file path="cli/src/core/installRules.ts">
@@ -258,6 +355,19 @@ import { confirm } from "@clack/prompts";
 import pc from 'picocolors';
 import { logger } from "~/shared/logger.js";
 export async function installRules(templateDir: string, overwrite: boolean = false, selectedRules: string[] = []):Promise<boolean>
+⋮----
+// Create .cursor directory if it doesn't exist
+⋮----
+// Get list of rule files from the package
+⋮----
+// Copy each rule file to the project's .cursor directory
+⋮----
+// Get list of existing rule files
+⋮----
+// Copy the rule file
+⋮----
+// Handle case where we might not be in a project (e.g., global install)
+⋮----
 export function logInstallResult(changesMade: boolean)
 </file>
 
@@ -274,9 +384,9 @@ const parsePackageJson = async (): Promise<
 </file>
 
 <file path="cli/src/shared/constants.ts">
-import { dirname, join } from "path";
-import { RepomixConfig } from "repomix";
-import { fileURLToPath } from "url";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { RepomixConfig } from "repomix";
 </file>
 
 <file path="cli/src/shared/errorHandle.ts">
@@ -294,6 +404,10 @@ export const handleError = (error: unknown): void =>
 ⋮----
 // If unexpected error, show stack trace by default
 ⋮----
+// Unknown errors
+⋮----
+// Community support information
+⋮----
 export const rethrowValidationErrorIfZodError = (error: unknown, message: string): void =>
 </file>
 
@@ -301,6 +415,13 @@ export const rethrowValidationErrorIfZodError = (error: unknown, message: string
 import { intro, log, outro } from '@clack/prompts';
 import util from 'node:util';
 import pc from 'picocolors';
+⋮----
+FORCE: -1, // always show output
+SILENT: 0, // No output
+ERROR: 1, // error
+WARN: 2, // warn
+INFO: 3, // success, info, log, note
+DEBUG: 4, // debug, trace
 ⋮----
 export type CursorRulesLogLevel = (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
 class CursorRulesLogger
@@ -510,80 +631,88 @@ Should become:
 </file>
 
 <file path="cli/src/index.ts">
-
+// ---------------------------------------------------------------------------------------------------------------------
+// Shard
+// ---------------------------------------------------------------------------------------------------------------------
+⋮----
+// ---------------------------------------------------------------------------------------------------------------------
+// CLI
+// ---------------------------------------------------------------------------------------------------------------------
+⋮----
+// Init action
+⋮----
+// Default action
+// export { runDefaultAction } from './cli/actions/defaultAction.js';
 </file>
 
 <file path="cli/package.json">
 {
-  "name": "@gabimoncha/cursor-rules",
-  "description": "A CLI for bootstrapping Cursor rules to a project",
-  "version": "0.1.5",
-  "type": "module",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
-  },
-  "author": "gabimoncha <gabimoncha@gmail.com>",
-  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "/lib",
-    "/bin",
-    "!src"
-  ],
-  "bin": {
-    "cursor-rules": "bin/cursor-rules.js"
-  },
-  "scripts": {
-    "clean": "rimraf lib",
-    "prepare": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun copy-templates",
-    "copy-templates": "mkdir -p lib/templates && cp -r src/templates/rules-default lib/templates/ && cp -r src/templates/repomix-instructions lib/templates/"
-  },
-  "keywords": [
-    "repository",
-    "cli",
-    "generative-ai",
-    "ai",
-    "llm",
-    "source-code",
-    "code-analysis",
-    "development-tool",
-    "cursor",
-    "cursor-directory",
-    "cursor-rules",
-    "cursor-rules-cli",
-    "cursor-ide",
-    "cursor-editor",
-    "cursor-rules-generator",
-    "cursor-rules-generator-cli"
-  ],
-  "dependencies": {
-    "@clack/prompts": "^0.10.0",
-    "commander": "^13.1.0",
-    "package-manager-detector": "^1.1.0",
-    "repomix": "^0.3.1",
-    "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.8",
-    "@types/node": "^22.14.0",
-    "rimraf": "^6.0.1",
-    "tsc-alias": "^1.8.13",
-    "typescript": "^5.8.3"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
-  "directories": {
-    "example": "example",
-    "lib": "lib"
-  }
+	"name": "@gabimoncha/cursor-rules",
+	"description": "A CLI for bootstrapping Cursor rules to a project",
+	"version": "0.1.8",
+	"type": "module",
+	"main": "./lib/index.js",
+	"types": "./lib/index.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+	},
+	"bugs": {
+		"url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+	},
+	"author": "gabimoncha <gabimoncha@gmail.com>",
+	"homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": ["/lib", "/bin", "!src"],
+	"bin": {
+		"cursor-rules": "bin/cursor-rules.js"
+	},
+	"scripts": {
+		"clean": "rimraf lib",
+		"prepare": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-markdown",
+		"copy-markdown": "bun run ../scripts/copy-markdown.ts"
+	},
+	"keywords": [
+		"repository",
+		"cli",
+		"generative-ai",
+		"ai",
+		"llm",
+		"source-code",
+		"code-analysis",
+		"development-tool",
+		"cursor",
+		"cursor-directory",
+		"cursor-rules",
+		"cursor-rules-cli",
+		"cursor-ide",
+		"cursor-editor",
+		"cursor-rules-generator",
+		"cursor-rules-generator-cli"
+	],
+	"dependencies": {
+		"@clack/prompts": "^0.10.0",
+		"commander": "^13.1.0",
+		"package-manager-detector": "^1.1.0",
+		"regex": "^6.0.1",
+		"repomix": "^0.3.3",
+		"zod": "^3.24.2"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.2.10",
+		"@types/node": "^22.14.0",
+		"rimraf": "^6.0.1",
+		"tsc-alias": "^1.8.13",
+		"typescript": "^5.8.3"
+	},
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+	"directories": {
+		"example": "example",
+		"lib": "lib"
+	}
 }
 </file>
 
@@ -597,7 +726,22 @@ A CLI tool for managing AI-assisted guidance in your projects through Cursor IDE
 
 ## What are Cursor Rules?
 
-Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules help the AI understand project structure, coding conventions, and best practices.
+[YouTube presentation](https://www.youtube.com/watch?v=RphQhNX9xB0)
+
+Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
+
+- Project structure and organization
+- Coding conventions and patterns
+- Task management approaches
+- Best practices specific to your codebase
+
+## Features
+
+- 🚀 **Rule Installation**: Easily add Cursor rules to any project
+- 📋 **Template Rules**: Includes default rule templates for common use cases
+- 💬 **Interactive Setup**: Guided setup process using command-line prompts
+- 📊 **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
+- 📁 **Project Structure**: Creates standardized rule organization
 
 ## Installation
 
@@ -995,18 +1139,37 @@ Our CLI provides these default templates:
 
 <file path="example/package.json">
 {
-  "name": "example",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "rules:dev": "bun run --bun cursor-rules",
-    "rules:lib": "cursor-rules",
-    "clean": "rm -rf .cursor repomix-output.xml repomix.config.json"
-  },
-  "devDependencies": {
-    "@gabimoncha/cursor-rules": "workspace:*"
-  }
+	"name": "example",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"rules:dev": "bun run --bun cursor-rules",
+		"rules:lib": "cursor-rules",
+		"clean": "rm -rf repomix-output.xml repomix.config.json && find .cursor/rules -mindepth 1 ! -name 'bad-rule.mdc' -exec rm -rf -- {} +"
+	},
+	"devDependencies": {
+		"@gabimoncha/cursor-rules": "workspace:*"
+	}
 }
+</file>
+
+<file path="scripts/copy-markdown.ts">
+import fs from "node:fs/promises";
+import path from "node:path";
+import { detect } from "out-of-character";
+export async function copyTemplates()
+⋮----
+// Create the templates directory
+⋮----
+// Copy default rules
+⋮----
+// Copy the awesome cursor rules after checking for vulnerabilities
+⋮----
+export async function copyRepomixInstructions()
+⋮----
+// Create the templates directory
+⋮----
+// Copy repomix instructions
 </file>
 
 <file path=".gitignore">
@@ -1057,10 +1220,11 @@ coverage/
 
 # yarn
 .yarn/
+example/.cursor*
 </file>
 
 <file path=".tool-versions">
-bun 1.2.8
+bun 1.2.13
 yarn 1.22.22
 </file>
 
@@ -1149,39 +1313,33 @@ SOFTWARE.
 
 <file path="package.json">
 {
-  "name": "cursor-rules-cli",
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
-  },
-  "author": "gabimoncha <gabimoncha@gmail.com>",
-  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
-  "license": "MIT",
-  "workspaces": [
-    "cli",
-    "example"
-  ],
-  "scripts": {
-    "repomix": "repomix --config repomix.config.json",
-    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
-    "release": "bun publish --cwd cli --otp",
-    "rules": "bun run --bun cursor-rules",
-    "test:rules": "bun -cwd example rules",
-    "test:repomix": "bun -cwd example repomix",
-    "test:yolo": "bun -cwd example yolo"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.8",
-    "@types/node": "^22.14.0",
-    "repomix": "^0.3.1",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.8.3"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+	"name": "cursor-rules-cli",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+	},
+	"bugs": {
+		"url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+	},
+	"author": "gabimoncha <gabimoncha@gmail.com>",
+	"homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+	"license": "MIT",
+	"workspaces": ["cli", "example"],
+	"scripts": {
+		"repomix": "repomix --config repomix.config.json",
+		"prepublishOnly": "bun --cwd cli prepare && bun --cwd example clean",
+		"release": "bun publish --cwd cli --otp",
+		"rules": "bun run --bun cursor-rules"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.2.8",
+		"@types/node": "^22.14.0",
+		"repomix": "^0.3.1",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.8.3"
+	},
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
 </file>
 
@@ -1194,6 +1352,8 @@ A command-line tool for managing AI-assisted guidance in your projects through C
 <img src="https://github.com/user-attachments/assets/7ace785a-fb5f-4537-963c-68eea490def1" width="80%" height="80%"/>
 
 ## What are Cursor Rules?
+
+[YouTube presentation](https://www.youtube.com/watch?v=RphQhNX9xB0)
 
 Cursor rules are markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance the AI's understanding of:
 
