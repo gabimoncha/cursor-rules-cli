@@ -22,6 +22,7 @@ import {
   TEMPLATE_DIR,
 } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
+import { fileExists } from '~/core/fileExists.js';
 
 const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
 
