@@ -100,6 +100,8 @@ Our CLI provides these default templates:
 - **project-structure.md**: Documents project organization and architecture
 - **task-list.md**: Conventions for tracking project tasks
 
+The CLI also provides rules from [awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules/tree/7e4db830d65c8951463863dd25cc39b038d34e02/rules-new) repository
+
 
 ## Troubleshooting
 

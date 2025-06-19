@@ -9,6 +9,7 @@ A reference for all commands and options available in the Cursor Rules CLI.
 |---------|-------------|
 | `init` | Start the setup process |
 | `list` | List all rules |
+| `audit` | Audit existing rules |
 | `repomix` | Generate repomix output with recommended settings |
 
 ## Global Options
@@ -47,6 +48,9 @@ cursor-rules init -f
 
 # List existing rules
 cursor-rules list
+
+# Audit existing rules
+cursor-rules audit
 
 # Show version information
 cursor-rules -v
