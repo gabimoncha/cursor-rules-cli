@@ -99,7 +99,6 @@ describe('commander-tabtab', () => {
     it('should return all options for init command', () => {
       const initCommand = findCommand(program, 'init');
       const options = getOptions(initCommand);
-      expect(options).toHaveLength(5);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options
@@ -122,7 +121,6 @@ describe('commander-tabtab', () => {
     it('should return only global options for list command', () => {
       const listCommand = findCommand(program, 'list');
       const options = getOptions(listCommand);
-      expect(options).toHaveLength(2);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options
@@ -139,7 +137,6 @@ describe('commander-tabtab', () => {
     it('should return only global options for audit command', () => {
       const auditCommand = findCommand(program, 'audit');
       const options = getOptions(auditCommand);
-      expect(options).toHaveLength(2);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options
@@ -156,7 +153,6 @@ describe('commander-tabtab', () => {
     it('should return only global options for repomix command', () => {
       const repomixCommand = findCommand(program, 'repomix');
       const options = getOptions(repomixCommand);
-      expect(options).toHaveLength(2);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options
@@ -172,39 +168,28 @@ describe('commander-tabtab', () => {
     it('should return all options for scan command', () => {
       const scanCommand = findCommand(program, 'scan');
       const options = getOptions(scanCommand);
-      expect(options).toHaveLength(7);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options
         .map(([_, oShort]) => oShort?.name)
         .filter(Boolean);
 
-      expect(optionLongNames).toHaveLength(7);
-      expect(optionShortNames).toHaveLength(6);
+      expect(optionLongNames).toHaveLength(5);
+      expect(optionShortNames).toHaveLength(4);
 
       expect(optionLongNames).toMatchObject([
         '--verbose',
         '--quiet',
         '--path',
-        '--recursive',
         '--include-pattern',
         '--exclude-pattern',
-        '--show-sizes',
       ]);
-      expect(optionShortNames).toMatchObject([
-        '-q',
-        '-p',
-        '-r',
-        '-i',
-        '-e',
-        '-s',
-      ]);
+      expect(optionShortNames).toMatchObject(['-q', '-p', '-i', '-e']);
     });
 
     it('should return all options for completion command', () => {
       const completionCommand = findCommand(program, 'completion');
       const options = getOptions(completionCommand);
-      expect(options).toHaveLength(4);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options

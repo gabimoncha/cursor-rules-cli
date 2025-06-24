@@ -94,7 +94,6 @@ export const setupProgram = (programInstance: Command = program) => {
     .command('scan')
     .description('scan and check all files in the specified path')
     .requiredOption('-p, --path <path>', 'path to scan')
-    .option('-r, --recursive', 'scan directories recursively')
     .option(
       '-i, --include-pattern <pattern>',
       'regex pattern for files to include'
@@ -103,7 +102,6 @@ export const setupProgram = (programInstance: Command = program) => {
       '-e, --exclude-pattern <pattern>',
       'regex pattern for files to exclude'
     )
-    .option('-s, --show-sizes', 'show file sizes')
     .action(commanderActionEndpoint);
 
   programInstance
@@ -221,10 +219,8 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
 
     await runScanPathAction({
       path: options.path,
-      recursive: options.recursive,
       includePattern: options.includePattern,
       excludePattern: options.excludePattern,
-      showSizes: options.showSizes,
     });
     return;
   }
