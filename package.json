@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "repomix": "repomix --config repomix.config.json",
-    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepare",
+    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepack",
     "release": "bun publish --cwd cli --otp",
     "check": "bun run ./scripts/check-awesome-cursorrules.ts",
     "rules": "bun run --node cursor-rules",

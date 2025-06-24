@@ -24,7 +24,7 @@
 	},
 	"scripts": {
 		"clean": "rimraf lib",
-		"prepare": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-markdown",
+		"prepack": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-markdown",
 		"copy-markdown": "bun run ../scripts/copy-markdown.ts"
 	},
 	"keywords": [
