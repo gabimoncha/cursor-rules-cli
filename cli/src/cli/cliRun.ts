@@ -11,7 +11,7 @@ import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 import { checkForUpdates } from '~/core/checkForUpdates.js';
 import { runAuditRulesAction } from '~/cli/actions/auditRulesAction.js';
-import { runScanPathAction } from './actions/scanPathAction.js';
+// import { runScanPathAction } from './actions/scanPathAction.js';
 import { commanderTabtab } from '~/core/commander-tabtab.js';
 import {
   runInstallCompletionAction,
@@ -210,20 +210,20 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
   }
 
   // Scan command
-  if (cmd === 'scan') {
-    if (!options.path) {
-      logger.error('Path argument is required for scan command');
-      command.outputHelp();
-      return;
-    }
+  // if (cmd === 'scan') {
+  //   if (!options.path) {
+  //     logger.error('Path argument is required for scan command');
+  //     command.outputHelp();
+  //     return;
+  //   }
 
-    await runScanPathAction({
-      path: options.path,
-      includePattern: options.includePattern,
-      excludePattern: options.excludePattern,
-    });
-    return;
-  }
+  //   await runScanPathAction({
+  //     path: options.path,
+  //     includePattern: options.includePattern,
+  //     excludePattern: options.excludePattern,
+  //   });
+  //   return;
+  // }
 
   // List command
   if (cmd === 'audit') {
