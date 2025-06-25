@@ -5,171 +5,84 @@ alwaysApply: false
 ---
 # Cursor Rules CLI
 
-A CLI tool to add and manage Cursor rules in your projects. This tool helps developers integrate AI-assisted guidance into their codebases through the Cursor IDE.
+A CLI tool to bootstrap and manage Cursor rules, enabling AI-assisted guidance across any codebase from the comfort of the terminal.
 
 ## Purpose
 
-The Cursor Rules CLI facilitates the creation, installation, and management of Cursor rules - markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance AI's understanding of your project structure, coding conventions, and task management approach.
+Provide an easy-to-use command-line interface for installing, generating and maintaining **Cursor rules** so that the Cursor IDE (or any LLM) can immediately understand the structure, conventions and workflows of a project.
 
 ## Key features
 
-- **Rule Installation**: Easily add Cursor rules to any project
-- **Template Rules**: Includes default rule templates for common use cases
-- **Interactive Setup**: Guided setup process using command-line prompts
-- **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
-- **Project Structure**: Creates standardized rule organization within projects
+- 🚀 **Interactive setup (`init`)** – scaffolds the `.cursor/rules` directory with sensible defaults.
+- 📦 **Rule installation** – installs both first-party templates and community rules from `awesome-cursorrules`.
+- 🪄 **Repomix integration** – produces a compressed XML snapshot of the repository for large-context models.
+- 🛡 **Audit & list commands** – inspect existing rules and project paths.
+- 🔄 **Auto-update & version check** – notifies users when a new CLI version is available.
 
 ## Directory structure
 
 ```tree
 .
-├── cli/                          # Main CLI implementation package
-│   ├── bin/                        # CLI executable scripts
-│   ├── src/                        # Source code
-│   │   ├── cli/                      # CLI implementation components
-│   │   │   ├── actions/                # Command action handlers
-│   │   │   ├── cliRun.ts               # CLI runner functionality
-│   │   │   ├── types.ts                # CLI type definitions
-│   │   ├── core/                     # Core business logic
-│   │   │   ├── checkForUpdates.ts      # Version checking functionality
-│   │   │   ├── installRules.ts         # Rule installation functionality
-│   │   │   ├── packageJsonParse.ts     # Package.json parsing utilities
-│   │   ├── shared/                   # Shared utilities and constants
-│   │   │   ├── constants.ts            # Global constants
-│   │   │   ├── errorHandle.ts          # Error handling utilities
-│   │   │   ├── logger.ts               # Logging functionality
-│   │   ├── templates/                # Rule templates
-│   │   │   ├── rules-default/          # Default rule templates
-│   │   │       ├── cursor-rules.md       # Rules for cursor rules creation
-│   │   │       ├── project-structure.md  # Project structure guidelines
-│   │   │       ├── task-list.md          # Task management guidelines
-│   │   ├── index.ts                  # Main entry point
-│   ├── package.json                # CLI package configuration
-│   ├── tsconfig.json                # TypeScript configuration
-│   ├── tsconfig.build.json          # Build-specific TypeScript config
-│   ├── README.md                   # CLI-specific documentation
-├── docs/                         # Documentation
-│   ├── CLI_COMMANDS.md             # CLI command reference
-│   ├── CONTRIBUTING.md             # Contribution guidelines
-│   ├── CURSOR_RULES_GUIDE.md       # Comprehensive guide to cursor rules
-├── example/                      # Example project for testing
-│   ├── parent_folder/              # Example nested directory structure
-│   │   ├── child_folder/             # Child directory example
-│   │   ├── other_child_folder/       # Another child directory example
-│   ├── single_folder/              # Simple folder example
-│   ├── index.ts                    # Example entry point
-│   ├── package.json                # Example package configuration
-├── .gitignore                    # Git ignore file
-├── .tool-versions                # Tool versions for asdf version manager
-├── FUTURE_ENHANCEMENTS.md        # Planned improvements documentation
-├── LICENSE                       # MIT License file
-├── package.json                  # Root package configuration
-├── README.md                     # Main project documentation
+├── .github/                   # Continuous-integration workflows (tests, releases)
+│   └── workflows/
+│       └── tests.yml          # Runs the Bun test suite on each push
+├── cli/                       # **Primary package** – all CLI source and build artifacts
+│   ├── bin/                   # Executable entry script (`cursor-rules`)
+│   ├── src/                   # TypeScript source organised by domain
+│   │   ├── audit/             # Unicode & security helpers
+│   │   ├── cli/               # Command definitions & action handlers
+│   │   ├── core/              # Business logic (updates, rule install, etc.)
+│   │   ├── shared/            # Constants, logger and error helpers
+│   │   └── templates/         # Default rule and instruction markdown templates
+│   ├── package.json           # npm manifest for the CLI package
+│   ├── tsconfig*.json         # TypeScript build and IDE configs
+│   └── README.md              # CLI-specific documentation
+├── docs/                      # Additional markdown docs (commands, contributing, guides)
+├── example/                   # Sample project used in tests & demonstrations
+│   ├── parent_folder/         # Nested structure showcasing rule discovery
+│   └── single_folder/         # Flat example with its own `.cursor` rules
+├── scripts/                   # Maintenance / helper scripts executed via Bun
+├── .cursor/                   # **This repository's own Cursor rules** (including this file)
+├── FUTURE_ENHANCEMENTS.md     # Road-map and backlog
+├── package.json               # Workspace root manifest (Yarn workspaces & scripts)
+├── tsconfig.json              # Workspace-level TypeScript config
+└── README.md                  # Project overview seen on GitHub
 ```
 
 ## Architecture
 
-The project follows a modular architecture:
+1. **CLI layer** – built with `commander` and `@clack/prompts` for rich, interactive commands.
+2. **Core services** – pure functions that implement rule installation, version checks and Repomix generation.
+3. **Templates layer** – markdown scaffolds shipped inside the package; copied & customised during `init`.
+4. **Utilities & shared** – logger, error handling and constants reused throughout the codebase.
 
-1. **CLI Interface Layer**: 
-   - Uses Commander.js for command parsing
-   - Implements interactive prompts with @clack/prompts
-   - Handles user input and command routing
-
-2. **Core Logic Layer**:
-   - Rule installation and management
-   - Package information parsing
-   - Configuration validation
-   - Version checking and updates
-
-3. **Template Management**:
-   - Default rule templates
-   - Template customization
-
-4. **Repomix Integration**:
-   - Repository analysis
-   - XML output generation for AI consumption
-
-## Default Templates
-
-The CLI provides the following default templates:
-- **cursor-rules.md**: Guidelines for adding and organizing AI rules
-- **project-structure.md**: Overview of the project and organization
-- **task-list.md**: Guidelines for tracking project progress with task lists
+The design is intentionally modular: each layer can evolve independently and is covered by dedicated unit tests (located under `cli/src/core/__tests__`).
 
 ## Usage
 
-### Installation
-
-**Global Install:**
 ```bash
-# Using bun
+# Install globally with Bun
 bun add -g @gabimoncha/cursor-rules
 
-# Using yarn
-yarn global add @gabimoncha/cursor-rules
-
-# Using npm
-npm install -g @gabimoncha/cursor-rules
-```
-
-**Project Install:**
-```bash
-# Using bun
-bun add -d @gabimoncha/cursor-rules
-
-# Using yarn
-yarn add -D @gabimoncha/cursor-rules
-
-# Using npm
-npm install --save-dev @gabimoncha/cursor-rules
-```
-
-### Commands
-
-```bash
-# Initialize cursor rules in your project
+# Initialise rules in an existing repo
 cursor-rules init
 
-# Generate repomix file for AI analysis
+# Generate a Repomix snapshot
 cursor-rules repomix
-
-# List existing rules in the project
-cursor-rules list
-
-# Display version information
-cursor-rules --version
-```
-
-### Options
-
-```bash
-# Initialize cursor rules with default templates, overwriting rules and generating repomix-output.xml and repomix.config.file
-cursor-rules init --force
-
-# Initialize cursor rules, autoselect default repomix options generating repomix-output.xml and repomix.config.file
-cursor-rules init --repomix
-
-# Initialize cursor rules, overwrites selected rules
-cursor-rules init --overwrite
 ```
 
 ## Technical implementation
 
 The project is built with:
-- **TypeScript**: For type-safe code
-- **Commander.js**: For CLI command parsing
-- **@clack/prompts**: For interactive command-line prompts
-- **Repomix**: For repository analysis and overview generation
-- **Zod**: For runtime type validation
-- **Bun/Node.js**: For JavaScript runtime support
-- **Package-manager-detector**: For detecting package managers
+- **TypeScript** – strict, ES2022-targeted
+- **Bun** – fast runtime & package manager used in CI
+- **Commander.js** – command parsing
+- **@clack/prompts** – TUI prompts
+- **Repomix** – repository summarisation
+- **Zod** – runtime validation
 
 ## Future Enhancements
 
-- Add rule validation and linting
-- Enhanced rule templates for different project types
-- Implement more specialized rule templates for different project types
-- Integration with more code analysis tools
-- Custom rule generation based on project analysis
-- UI for rule management
+- 🔍 Rule validation & linting
+- 🧩 Additional language-/framework-specific templates
+- 🌐 Web UI for visual rule management
