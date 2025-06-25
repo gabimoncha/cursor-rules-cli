@@ -21,14 +21,13 @@ describe('commander-tabtab', () => {
   describe('getCommands', () => {
     it('should extract all commands', () => {
       const commands = getCommands(program);
-      expect(commands).toHaveLength(6);
+      expect(commands).toHaveLength(5);
 
       const listOfCommands = commands.map(({ name, description }) => name);
 
       expect(listOfCommands).toMatchObject([
         'init',
         'list',
-        'audit',
         'repomix',
         'scan',
         'completion',
@@ -38,7 +37,7 @@ describe('commander-tabtab', () => {
     it('should extract all command names and descriptions', () => {
       const commands = getCommands(program);
 
-      expect(commands).toHaveLength(6);
+      expect(commands).toHaveLength(5);
 
       expect(commands).toContainEqual({
         name: 'init',
@@ -47,10 +46,6 @@ describe('commander-tabtab', () => {
       expect(commands).toContainEqual({
         name: 'list',
         description: 'list all rules',
-      });
-      expect(commands).toContainEqual({
-        name: 'audit',
-        description: 'check for vulnerabilities in the codebase',
       });
       expect(commands).toContainEqual({
         name: 'repomix',
@@ -121,22 +116,6 @@ describe('commander-tabtab', () => {
     it('should return only global options for list command', () => {
       const listCommand = findCommand(program, 'list');
       const options = getOptions(listCommand);
-
-      const optionLongNames = options.map(([oLong]) => oLong.name);
-      const optionShortNames = options
-        .map(([_, oShort]) => oShort?.name)
-        .filter(Boolean);
-
-      expect(optionLongNames).toHaveLength(2);
-      expect(optionShortNames).toHaveLength(1);
-
-      expect(optionLongNames).toMatchObject(['--verbose', '--quiet']);
-      expect(optionShortNames).toMatchObject(['-q']);
-    });
-
-    it('should return only global options for audit command', () => {
-      const auditCommand = findCommand(program, 'audit');
-      const options = getOptions(auditCommand);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
       const optionShortNames = options
@@ -334,43 +313,6 @@ describe('commander-tabtab', () => {
         },
       ]);
     });
-
-    it('should return empty array when no options match prefix', () => {
-      const options = [
-        { name: '--help', description: 'show help' },
-        { name: '-h', description: 'short help' },
-      ];
-
-      const filtered = filterByPrefix(options, '--v');
-      expect(filtered).toHaveLength(0);
-    });
-
-    it('should filter command names by prefix', () => {
-      const commands = getCommands(program);
-
-      const filtered = filterByPrefix(commands, 'a');
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].name).toBe('audit');
-    });
-
-    it('should filter all commands with specific prefixes', () => {
-      const commands = getCommands(program);
-
-      // Test filtering with 's' prefix
-      const sCommands = filterByPrefix(commands, 's');
-      expect(sCommands).toHaveLength(1);
-      expect(sCommands[0].name).toBe('scan');
-
-      // Test filtering with 'c' prefix
-      const cCommands = filterByPrefix(commands, 'c');
-      expect(cCommands).toHaveLength(1);
-      expect(cCommands[0].name).toBe('completion');
-
-      // Test filtering with 'r' prefix
-      const rCommands = filterByPrefix(commands, 'r');
-      expect(rCommands).toHaveLength(1);
-      expect(rCommands[0].name).toBe('repomix');
-    });
   });
 
   describe('filterByPrefix', () => {
@@ -402,14 +344,6 @@ describe('commander-tabtab', () => {
 
       const filtered = filterByPrefix(options, '--v');
       expect(filtered).toHaveLength(0);
-    });
-
-    it('should filter command names by prefix', () => {
-      const commands = getCommands(program);
-
-      const filtered = filterByPrefix(commands, 'a');
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].name).toBe('audit');
     });
 
     it('should filter all commands with specific prefixes', () => {

@@ -9,6 +9,7 @@ import {
 import fs from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import pc from 'picocolors';
 import {
   runRepomixAction,
   writeRepomixConfig,
@@ -25,6 +26,7 @@ import { logger } from '~/shared/logger.js';
 import { fileExists } from '~/core/fileExists.js';
 
 const rulesDir = path.join(TEMPLATE_DIR, 'rules-default');
+const awesomeRulesDir = path.join(TEMPLATE_DIR, 'awesome-cursorrules');
 
 export const runInitAction = async (opt: CliOptions) => {
   logger.log('\n');
@@ -38,7 +40,7 @@ export const runInitAction = async (opt: CliOptions) => {
   }
 
   let templateFiles = await fs.readdir(rulesDir);
-
+  let awesomeTemplateFiles = await fs.readdir(awesomeRulesDir);
   let result = false;
 
   const group = await groupPrompt(
@@ -62,6 +64,28 @@ export const runInitAction = async (opt: CliOptions) => {
           })),
           required: false,
         }),
+      awesomeRules: () =>
+        multiselect({
+          message: `Which awesome rules would you like to add? ${pc.yellow(
+            'source: https://github.com/PatrickJS/awesome-cursorrules'
+          )}`,
+          options: awesomeTemplateFiles.map((file) => ({
+            value: file,
+            // Capitalizes the first letter of each word
+            label: file
+              .split('.')[0]
+              .split('-')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+            // Hints the rule description
+            hint: readFileSync(path.join(awesomeRulesDir, file), 'utf-8')
+              .split('\n')[1]
+              .split(':')[1]
+              .trim(),
+          })),
+          required: false,
+        }),
+
       runRepomix: async ({ results }) => {
         if (!results.rules?.includes('project-structure.md')) {
           return false;
@@ -124,6 +148,13 @@ export const runInitAction = async (opt: CliOptions) => {
   if (group.rules.length > 0) {
     result = await installRules(rulesDir, opt.overwrite, group.rules);
   }
+  if (group.awesomeRules.length > 0) {
+    result = await installRules(
+      awesomeRulesDir,
+      opt.overwrite,
+      group.awesomeRules
+    );
+  }
 
   if (!group.runRepomix) {
     logInstallResult(result);
@@ -168,6 +199,9 @@ export const runInitAction = async (opt: CliOptions) => {
 
 export async function runInitForceAction(opt: CliOptions) {
   const result = await installRules(rulesDir, true);
+
+  // install awesome rules based on the project's contents
+
   await runRepomixAction(opt.quiet);
   logInstallResult(result);
 }

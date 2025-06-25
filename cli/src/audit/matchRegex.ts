@@ -1,28 +1,22 @@
 import { decodeLanguageTags } from '~/audit/decodeLanguageTags.js';
 import { regexTemplates } from './regex.js';
-import { logger } from "~/shared/logger.js";
+import { logger } from '~/shared/logger.js';
 
 function matchTemplate(template: string, regex: RegExp, text: string) {
   let matched = false;
-  let decoded = '';
+  let decoded = null;
   const matches = [...text.matchAll(regex)];
 
-  if (!matches.length) return { matched: false, decoded: '' };
+  if (!matches.length) return { matched: false, decoded };
 
   matched = true;
 
+  logger.debug('\n===============================================');
+  logger.debug('\nfound with:', template, regex);
   for (const match of matches) {
-    if ('indices' in match) {
-      logger.debug('===============================================');
-      logger.debug('\n\n\nfound with:', template, regex);
-
-      const range = match?.indices?.groups?.tag
-      if (range?.length) {
-
-        decoded = decodeLanguageTags(text.slice(range[0], range[1]))
-        logger.debug('\ndecoded:')
-        logger.debug(decoded)
-      }
+    const range = match?.indices?.groups?.tag;
+    if (range?.length) {
+      decoded = decodeLanguageTags(text.slice(range[0], range[1]));
     }
   }
 
@@ -30,11 +24,16 @@ function matchTemplate(template: string, regex: RegExp, text: string) {
 }
 
 export function matchRegex(text: string) {
-  return Object.entries(regexTemplates).reduce((acc: Record<string, boolean>, [key, regex]) => {
-    const { matched, decoded } = matchTemplate(key, regex, text);
+  return Object.entries(regexTemplates).reduce(
+    (acc: Record<string, string | null>, [template, regex]) => {
+      const { matched, decoded } = matchTemplate(template, regex, text);
 
-    acc[key] = matched;
+      if (matched) {
+        acc[template] = decoded;
+      }
 
-    return acc;
-  }, {});
+      return acc;
+    },
+    {}
+  );
 }

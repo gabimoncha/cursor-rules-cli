@@ -1,7 +1,14 @@
-import { readdirSync, statSync } from 'node:fs';
+import {
+  PathOrFileDescriptor,
+  readdirSync,
+  readFileSync,
+  lstatSync,
+} from 'node:fs';
 import { join, resolve, relative, dirname } from 'node:path';
 import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
+import outOfChar from 'out-of-character';
+import { matchRegex } from '~/audit/matchRegex.js';
 
 export interface ScanOptions {
   filter: string;
@@ -13,13 +20,13 @@ export const runScanPathAction = (options: ScanOptions) => {
     const targetPath = resolve(options.path);
     logger.info(pc.blue(`📂 Scanning path: ${options.path}`));
 
-    const directoriesInfo = scanDirectory(targetPath, options.filter);
+    const pathMap = scanPath(targetPath, options.filter);
 
     // Apply filter to directory keys if provided
-    let filteredDirectoriesInfo = directoriesInfo;
+    let filteredPathMap = pathMap;
     if (options.filter) {
-      filteredDirectoriesInfo = new Map();
-      for (const [dirPath, dirInfo] of directoriesInfo) {
+      filteredPathMap = new Map();
+      for (const [dirPath, dirInfo] of pathMap) {
         // Check if filter matches directory path
         const matchesDirectory = dirPath.includes(options.filter);
 
@@ -31,7 +38,7 @@ export const runScanPathAction = (options: ScanOptions) => {
         });
 
         if (matchesDirectory || matchesFile.length > 0) {
-          filteredDirectoriesInfo.set(dirPath, {
+          filteredPathMap.set(dirPath, {
             ...dirInfo,
             count: matchesFile.length,
             files: matchesFile,
@@ -39,7 +46,7 @@ export const runScanPathAction = (options: ScanOptions) => {
         }
       }
 
-      if (filteredDirectoriesInfo.size === 0) {
+      if (filteredPathMap.size === 0) {
         logger.warn(
           `No directories or files found matching filter: "${options.filter}"`
         );
@@ -49,7 +56,7 @@ export const runScanPathAction = (options: ScanOptions) => {
       logger.info(pc.yellow(`🔍 Filtering by: "${options.filter}"`));
     }
 
-    const totalFiles = Array.from(filteredDirectoriesInfo.values()).reduce(
+    const totalFiles = Array.from(filteredPathMap.values()).reduce(
       (sum, dirInfo) => sum + dirInfo.count,
       0
     );
@@ -61,7 +68,7 @@ export const runScanPathAction = (options: ScanOptions) => {
 
     logger.info(pc.green(`\n✅ Found ${totalFiles} files total:`));
 
-    for (const [directory, dirInfo] of filteredDirectoriesInfo) {
+    for (const [directory, dirInfo] of filteredPathMap) {
       logger.log(
         `  ${pc.dim('•')} Found ${dirInfo.count} files in ${pc.cyan(directory)}`
       );
@@ -69,6 +76,16 @@ export const runScanPathAction = (options: ScanOptions) => {
 
     // Additional processing could go here
     // For example, analyzing cursor rules files, linting, etc.
+    const pathsToScan = [];
+    for (const [directory, dirInfo] of filteredPathMap) {
+      for (const file of dirInfo.files) {
+        pathsToScan.push(join(directory, file));
+      }
+    }
+
+    for (const file of pathsToScan) {
+      checkFile(file, join(process.cwd(), file));
+    }
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`Failed to scan path: ${error.message}`);
@@ -85,67 +102,80 @@ interface DirectoryInfo {
   files: string[];
 }
 
-function scanDirectory(
-  dirPath: string,
-  filter: string
-): Map<string, DirectoryInfo> {
-  const directoriesInfo = new Map<string, DirectoryInfo>();
+function scanPath(pathStr: string, filter: string): Map<string, DirectoryInfo> {
+  const pathInfo = new Map<string, DirectoryInfo>();
 
   try {
-    const baseDirs = readdirSync(dirPath);
-    const filteredBaseDirs = baseDirs.filter((entry) =>
-      excludeDefaultDirs(entry)
-    );
+    const isDir = lstatSync(pathStr).isDirectory();
 
-    // Recursively scan each filtered directory
-    for (const entry of filteredBaseDirs) {
-      const fullPath = join(dirPath, entry);
-      const stats = statSync(fullPath);
+    if (!isDir) {
+      const parentDir = dirname(pathStr);
+      const relativePath = relative(process.cwd(), parentDir) || '.';
+      const filename = pathStr.split('/').pop()!;
 
-      if (stats.isDirectory()) {
-        // Recursively scan subdirectory and merge results
-        const subDirectoriesInfo = scanDirectory(fullPath, filter);
-        for (const [dir, dirInfo] of subDirectoriesInfo) {
-          if (directoriesInfo.has(dir)) {
-            // Merge with existing directory info
-            const existing = directoriesInfo.get(dir)!;
-            existing.count += dirInfo.count;
-            existing.files.push(...dirInfo.files);
+      if (!isCursorRulesFile(filename)) {
+        return pathInfo;
+      }
+
+      pathInfo.set(relativePath, {
+        count: 1,
+        path: parentDir,
+        files: [filename],
+      });
+
+      return pathInfo;
+    }
+
+    readdirSync(pathStr)
+      .filter((entry) => excludeDefaultDirs(entry))
+      .forEach((entry) => {
+        const fullPath = join(pathStr, entry);
+        const stats = lstatSync(fullPath);
+
+        if (stats.isDirectory()) {
+          // Recursively scan subdirectory and merge results
+          const subpathInfo = scanPath(fullPath, filter);
+          for (const [subdir, subdirInfo] of subpathInfo) {
+            if (pathInfo.has(subdir)) {
+              // Merge with existing directory info
+              const existing = pathInfo.get(subdir)!;
+              existing.count += subdirInfo.count;
+              existing.files.push(...subdirInfo.files);
+            } else {
+              // Add new directory info
+              pathInfo.set(subdir, {
+                count: subdirInfo.count,
+                path: subdirInfo.path,
+                files: [...subdirInfo.files],
+              });
+            }
+          }
+        } else if (stats.isFile() && isCursorRulesFile(entry)) {
+          // Check if file matches include/exclude patterns
+          const parentDir = dirname(fullPath);
+          const relativeParentDir = relative(process.cwd(), parentDir);
+          const displayDir = relativeParentDir || '.';
+
+          if (pathInfo.has(displayDir)) {
+            // Update existing directory info
+            const existing = pathInfo.get(displayDir)!;
+            existing.count++;
+            existing.files.push(entry);
           } else {
-            // Add new directory info
-            directoriesInfo.set(dir, {
-              count: dirInfo.count,
-              path: dirInfo.path,
-              files: [...dirInfo.files],
+            // Create new directory info
+            pathInfo.set(displayDir, {
+              count: 1,
+              path: parentDir,
+              files: [entry],
             });
           }
         }
-      } else if (stats.isFile() && isCursorRulesFile(entry)) {
-        // Check if file matches include/exclude patterns
-        const parentDir = dirname(fullPath);
-        const relativeParentDir = relative(process.cwd(), parentDir);
-        const displayDir = relativeParentDir || '.';
-
-        if (directoriesInfo.has(displayDir)) {
-          // Update existing directory info
-          const existing = directoriesInfo.get(displayDir)!;
-          existing.count++;
-          existing.files.push(entry);
-        } else {
-          // Create new directory info
-          directoriesInfo.set(displayDir, {
-            count: 1,
-            path: parentDir,
-            files: [entry],
-          });
-        }
-      }
-    }
+      });
   } catch (error) {
-    logger.warn(`Could not read directory: ${dirPath}`);
+    logger.warn(`Could not read directory: ${pathStr}`);
   }
 
-  return directoriesInfo;
+  return pathInfo;
 }
 
 const excludedDirs = ['node_modules', '__pycache__'];
@@ -193,4 +223,57 @@ function excludeDefaultDirs(filename: string) {
 
 function isCursorRulesFile(filename: string) {
   return filename === '.cursorrules' || filename.endsWith('.mdc');
+}
+
+function checkFile(file: string, filePath: PathOrFileDescriptor) {
+  try {
+    const text = readFileSync(filePath).toString();
+
+    const matchedRegex = matchRegex(text);
+    const matched = Object.entries(matchedRegex);
+
+    const outOfCharResult = outOfChar.detect(text);
+
+    const isVulnerable = outOfCharResult?.length > 0 || matched.length > 0;
+    if (!isVulnerable) return;
+
+    logger.prompt.message(
+      `${pc.red('Vulnerable file:')} ${pc.yellow(
+        relative(process.cwd(), filePath.toString())
+      )}`
+    );
+
+    if (matched.length > 0) {
+      matched.forEach(([template, decoded]) => {
+        const foundMsg = `Found${decoded ? ' hidden' : ''} ${template}`;
+        const decodedMsg = `${decoded ? `:\n${decoded}` : ''}`;
+        logger.prompt.message(`${pc.blue(foundMsg)}${decodedMsg}`);
+      });
+    }
+
+    if (outOfCharResult && outOfCharResult.length > 0) {
+      const noun = outOfCharResult.length > 1 ? 'characters' : 'character';
+      logger.prompt.message(pc.blue(`Hidden ${noun}:`));
+      const hiddenChars = outOfCharResult.reduce(
+        (acc: { [key: string]: number }, obj: any) => {
+          if (acc[obj.name]) {
+            acc[obj.name]++;
+          } else {
+            acc[obj.name] = 1;
+          }
+          return acc;
+        },
+        {}
+      );
+      Object.entries(hiddenChars).forEach(([name, count]) => {
+        const noun = count > 1 ? 'chars' : 'char';
+        logger.prompt.message(
+          pc.dim(`${pc.red('•')} '${name}': ${count} ${noun}`)
+        );
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    logger.quiet(pc.yellow(`\n No ${file} found.`));
+  }
 }

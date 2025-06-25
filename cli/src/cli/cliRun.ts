@@ -10,13 +10,13 @@ import type { CliOptions } from './types.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 import { checkForUpdates } from '~/core/checkForUpdates.js';
-import { runAuditRulesAction } from '~/cli/actions/auditRulesAction.js';
 import { runScanPathAction } from './actions/scanPathAction.js';
 import { commanderTabtab } from '~/core/commander-tabtab.js';
 import {
   runInstallCompletionAction,
   runUninstallCompletionAction,
 } from '~/cli/actions/completionActions.js';
+import { existsSync } from 'node:fs';
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
@@ -81,11 +81,6 @@ export const setupProgram = (programInstance: Command = program) => {
     .action(commanderActionEndpoint);
 
   programInstance
-    .command('audit')
-    .description('check for vulnerabilities in the codebase')
-    .action(commanderActionEndpoint);
-
-  programInstance
     .command('repomix')
     .description('generate repomix output with recommended settings')
     .action(commanderActionEndpoint);
@@ -93,7 +88,7 @@ export const setupProgram = (programInstance: Command = program) => {
   programInstance
     .command('scan')
     .description('scan and check all files in the specified path')
-    .requiredOption('-p, --path <path>', 'path to scan')
+    .option('-p, --path <path>', 'path to scan', '.')
     .option('-f, --filter <filter>', 'filter to apply to the scan')
     .action(commanderActionEndpoint);
 
@@ -210,16 +205,16 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
       return;
     }
 
+    if (!existsSync(options.path)) {
+      logger.error(`Path ${pc.yellow(options.path)} does not exist`);
+      command.outputHelp();
+      return;
+    }
+
     runScanPathAction({
       path: options.path,
       filter: options.filter,
     });
-    return;
-  }
-
-  // List command
-  if (cmd === 'audit') {
-    await runAuditRulesAction();
     return;
   }
 
