@@ -9,10 +9,12 @@ import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
 import outOfChar from 'out-of-character';
 import { matchRegex } from '~/audit/matchRegex.js';
+import { regex } from 'regex';
 
 export interface ScanOptions {
   filter: string;
   path: string;
+  pattern?: string;
 }
 
 export const runScanPathAction = (options: ScanOptions) => {
@@ -20,7 +22,7 @@ export const runScanPathAction = (options: ScanOptions) => {
     const targetPath = resolve(options.path);
     logger.info(pc.blue(`📂 Scanning path: ${options.path}`));
 
-    const pathMap = scanPath(targetPath, options.filter);
+    const pathMap = scanPath(targetPath, options.filter, options.pattern);
 
     // Apply filter to directory keys if provided
     let filteredPathMap = pathMap;
@@ -102,7 +104,11 @@ interface DirectoryInfo {
   files: string[];
 }
 
-function scanPath(pathStr: string, filter: string): Map<string, DirectoryInfo> {
+function scanPath(
+  pathStr: string,
+  filter: string,
+  pattern?: string
+): Map<string, DirectoryInfo> {
   const pathInfo = new Map<string, DirectoryInfo>();
 
   try {
@@ -113,7 +119,7 @@ function scanPath(pathStr: string, filter: string): Map<string, DirectoryInfo> {
       const relativePath = relative(process.cwd(), parentDir) || '.';
       const filename = pathStr.split('/').pop()!;
 
-      if (!isCursorRulesFile(filename)) {
+      if (!matchFileName(filename, pattern)) {
         return pathInfo;
       }
 
@@ -134,7 +140,7 @@ function scanPath(pathStr: string, filter: string): Map<string, DirectoryInfo> {
 
         if (stats.isDirectory()) {
           // Recursively scan subdirectory and merge results
-          const subpathInfo = scanPath(fullPath, filter);
+          const subpathInfo = scanPath(fullPath, filter, pattern);
           for (const [subdir, subdirInfo] of subpathInfo) {
             if (pathInfo.has(subdir)) {
               // Merge with existing directory info
@@ -150,7 +156,7 @@ function scanPath(pathStr: string, filter: string): Map<string, DirectoryInfo> {
               });
             }
           }
-        } else if (stats.isFile() && isCursorRulesFile(entry)) {
+        } else if (stats.isFile() && matchFileName(entry, pattern)) {
           // Check if file matches include/exclude patterns
           const parentDir = dirname(fullPath);
           const relativeParentDir = relative(process.cwd(), parentDir);
@@ -221,8 +227,24 @@ function excludeDefaultDirs(filename: string) {
   return !matchesExclude;
 }
 
-function isCursorRulesFile(filename: string) {
-  return filename === '.cursorrules' || filename.endsWith('.mdc');
+function matchFileName(filename: string, pattern?: string) {
+  const cursorRulesRegex = regex('g')`^\.cursorrules$|.*\.mdc$`;
+  if (pattern) {
+    try {
+      // Use RegExp constructor for user-provided patterns
+      const patternRegex = new RegExp(pattern, 'gv');
+      return patternRegex.test(filename) || cursorRulesRegex.test(filename);
+    } catch (error) {
+      logger.warn(
+        `Invalid regex pattern: ${pattern}. Error: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+      // Fall back to only cursor rules regex if pattern is invalid
+      return cursorRulesRegex.test(filename);
+    }
+  }
+  return cursorRulesRegex.test(filename);
 }
 
 function checkFile(file: string, filePath: PathOrFileDescriptor) {

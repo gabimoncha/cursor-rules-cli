@@ -90,6 +90,7 @@ export const setupProgram = (programInstance: Command = program) => {
     .description('scan and check all files in the specified path')
     .option('-p, --path <path>', 'path to scan', '.')
     .option('-f, --filter <filter>', 'filter to apply to the scan')
+    .option('-P, --pattern <pattern>', 'regex pattern to apply to the scan')
     .action(commanderActionEndpoint);
 
   programInstance
@@ -200,9 +201,8 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
   // Scan command
   if (cmd === 'scan') {
     if (!options.path) {
-      logger.error('Path argument is required for scan command');
-      command.outputHelp();
-      return;
+      logger.warn('Defaulting to current directory');
+      options.path = '.';
     }
 
     if (!existsSync(options.path)) {
@@ -214,6 +214,7 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
     runScanPathAction({
       path: options.path,
       filter: options.filter,
+      pattern: options.pattern,
     });
     return;
   }
