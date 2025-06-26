@@ -5,14 +5,58 @@ on:
     branches: ["main", "audit" ]
 
 jobs:
-  tests:
-    name: Tests
+  commander-tabtab-test:
+    name: Commander Tabtab test
     runs-on: ubuntu-latest
     steps:
-      # ...
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "latest"
-      - run: bun install
+      - run: bun install --frozen-lockfile
       - run: bun test:commander
+  init-action-test:
+    name: Init action test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+      - run: bun install --frozen-lockfile && bun prepublishOnly
+      - run: cd example && cursor-rules init -f
+      - run: |
+          ls -la
+          test -d ".cursor/rules/cursor-rules.mdc" || { echo "Rule not found"; exit 1; }
+          test -d ".cursor/rules/project-structure.mdc" || { echo "Rule not found"; exit 1; }
+          test -d ".cursor/rules/task-list.mdc" || { echo "Rule not found"; exit 1; }
+          test -d ".cursor/rules/use-bun-instead-of-node-vite-npm-pnpm.mdc" || { echo "Rule not found"; exit 1; }
+          test -d ".cursor/rules/bad-rule.mdc" || { echo "Rule not found"; exit 1; }
+          test -d "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
+          test -d "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
+  repomix-action-test:
+    name: Repomix action test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+      - run: bun install --frozen-lockfile && bun prepublishOnly
+      - run: cd example && cursor-rules repomix
+      - run: |
+          ls -la
+          test -d "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
+          test -d "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
+  scan-action-test:
+    name: Scan action test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+      - run: bun install --frozen-lockfile && bun prepublishOnly
+      - run: cd example && cursor-rules scan
+      - run: |
+          cursor-rules scan | grep -c "Vulnerable files:" | grep 4 || { echo "Not found"; exit 1;}

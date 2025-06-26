@@ -2,7 +2,7 @@ import { decodeLanguageTags } from '~/audit/decodeLanguageTags.js';
 import { regexTemplates } from './regex.js';
 import { logger } from '~/shared/logger.js';
 
-function matchTemplate(template: string, regex: RegExp, text: string) {
+function matchRegexTemplate(template: string, regex: RegExp, text: string) {
   let matched = false;
   let decoded = null;
   const matches = [...text.matchAll(regex)];
@@ -26,7 +26,7 @@ function matchTemplate(template: string, regex: RegExp, text: string) {
 export function matchRegex(text: string) {
   return Object.entries(regexTemplates).reduce(
     (acc: Record<string, string | null>, [template, regex]) => {
-      const { matched, decoded } = matchTemplate(template, regex, text);
+      const { matched, decoded } = matchRegexTemplate(template, regex, text);
 
       if (matched) {
         acc[template] = decoded;

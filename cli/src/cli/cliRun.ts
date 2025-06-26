@@ -90,7 +90,10 @@ export const setupProgram = (programInstance: Command = program) => {
     .description('scan and check all files in the specified path')
     .option('-p, --path <path>', 'path to scan', '.')
     .option('-f, --filter <filter>', 'filter to apply to the scan')
-    .option('-P, --pattern <pattern>', 'regex pattern to apply to the scan')
+    .option(
+      '-P, --pattern <pattern>',
+      'regex pattern to apply to the scan (default: "\\.cursorrules|.*\\.mdc")'
+    )
     .action(commanderActionEndpoint);
 
   programInstance
@@ -214,7 +217,7 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
     runScanPathAction({
       path: options.path,
       filter: options.filter,
-      pattern: options.pattern,
+      pattern: options.pattern ?? '\\.cursorrules|.*\\.mdc',
     });
     return;
   }

@@ -1,4 +1,5 @@
 // Based on the Avoid Source Code Spoofing Proposal: https://www.unicode.org/L2/L2022/22007r2-avoiding-spoof.pdf
+// These rules are not exhaustive, but are a good starting point.
 // TODO: Continue reading and implement the rest of the security report: https://www.unicode.org/reports/tr36/
 
 import { regex } from 'regex';

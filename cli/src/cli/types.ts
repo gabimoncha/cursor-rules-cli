@@ -8,15 +8,17 @@ export interface CliOptions extends OptionValues {
 
   // Rules Options
   force?: boolean;
-  init?: boolean;
   repomix?: boolean;
+  overwrite?: boolean;
 
   // Scan Options
   path?: string;
-  recursive?: boolean;
-  includePattern?: string;
-  excludePattern?: string;
-  showSizes?: boolean;
+  filter?: string;
+  pattern?: string;
+
+  // Completion Options
+  install?: boolean;
+  uninstall?: boolean;
 
   // MCP
   // mcp?: boolean;

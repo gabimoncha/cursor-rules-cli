@@ -1,42 +1,36 @@
-import {
-  PathOrFileDescriptor,
-  readdirSync,
-  readFileSync,
-  lstatSync,
-} from 'node:fs';
+import { readdirSync, readFileSync, lstatSync } from 'node:fs';
 import { join, resolve, relative, dirname } from 'node:path';
 import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
 import outOfChar from 'out-of-character';
 import { matchRegex } from '~/audit/matchRegex.js';
-import { regex } from 'regex';
 
 export interface ScanOptions {
-  filter: string;
   path: string;
-  pattern?: string;
+  filter?: string;
+  pattern: string;
 }
 
-export const runScanPathAction = (options: ScanOptions) => {
+export const runScanPathAction = ({ path, filter, pattern }: ScanOptions) => {
   try {
-    const targetPath = resolve(options.path);
-    logger.info(pc.blue(`📂 Scanning path: ${options.path}`));
+    const targetPath = resolve(path);
+    logger.info(pc.blue(`📂 Scanning path: ${path}`));
 
-    const pathMap = scanPath(targetPath, options.filter, options.pattern);
+    const pathMap = scanPath(targetPath, pattern);
 
     // Apply filter to directory keys if provided
     let filteredPathMap = pathMap;
-    if (options.filter) {
+    if (filter) {
       filteredPathMap = new Map();
       for (const [dirPath, dirInfo] of pathMap) {
         // Check if filter matches directory path
-        const matchesDirectory = dirPath.includes(options.filter);
+        const matchesDirectory = dirPath.includes(filter);
 
         // Check if filter matches any file path within this directory
         const matchesFile = dirInfo.files.filter((filename) => {
           const fullFilePath =
             dirPath === '.' ? filename : `${dirPath}/${filename}`;
-          return fullFilePath.includes(options.filter);
+          return fullFilePath.includes(filter);
         });
 
         if (matchesDirectory || matchesFile.length > 0) {
@@ -50,12 +44,12 @@ export const runScanPathAction = (options: ScanOptions) => {
 
       if (filteredPathMap.size === 0) {
         logger.warn(
-          `No directories or files found matching filter: "${options.filter}"`
+          `No directories or files found matching filter: "${filter}"`
         );
         return;
       }
 
-      logger.info(pc.yellow(`🔍 Filtering by: "${options.filter}"`));
+      logger.info(pc.yellow(`🔍 Filtering by: "${filter}"`));
     }
 
     const totalFiles = Array.from(filteredPathMap.values()).reduce(
@@ -85,9 +79,7 @@ export const runScanPathAction = (options: ScanOptions) => {
       }
     }
 
-    for (const file of pathsToScan) {
-      checkFile(file, join(process.cwd(), file));
-    }
+    pathsToScan.forEach(checkFile);
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`Failed to scan path: ${error.message}`);
@@ -106,8 +98,7 @@ interface DirectoryInfo {
 
 function scanPath(
   pathStr: string,
-  filter: string,
-  pattern?: string
+  pattern: string
 ): Map<string, DirectoryInfo> {
   const pathInfo = new Map<string, DirectoryInfo>();
 
@@ -140,7 +131,7 @@ function scanPath(
 
         if (stats.isDirectory()) {
           // Recursively scan subdirectory and merge results
-          const subpathInfo = scanPath(fullPath, filter, pattern);
+          const subpathInfo = scanPath(fullPath, pattern);
           for (const [subdir, subdirInfo] of subpathInfo) {
             if (pathInfo.has(subdir)) {
               // Merge with existing directory info
@@ -227,41 +218,38 @@ function excludeDefaultDirs(filename: string) {
   return !matchesExclude;
 }
 
-function matchFileName(filename: string, pattern?: string) {
-  const cursorRulesRegex = regex('g')`^\.cursorrules$|.*\.mdc$`;
-  if (pattern) {
-    try {
-      // Use RegExp constructor for user-provided patterns
-      const patternRegex = new RegExp(pattern, 'gv');
-      return patternRegex.test(filename) || cursorRulesRegex.test(filename);
-    } catch (error) {
-      logger.warn(
-        `Invalid regex pattern: ${pattern}. Error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      );
-      // Fall back to only cursor rules regex if pattern is invalid
-      return cursorRulesRegex.test(filename);
-    }
+function matchFileName(filename: string, pattern: string) {
+  try {
+    // Use RegExp constructor for user-provided patterns
+    const patternRegex = new RegExp(pattern, 'gv');
+    return patternRegex.test(filename);
+  } catch (error) {
+    logger.warn(
+      `Invalid regex pattern: ${pattern}. Error: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`
+    );
+    // Fall back to only cursor rules regex if pattern is invalid
+    return false;
   }
-  return cursorRulesRegex.test(filename);
 }
 
-function checkFile(file: string, filePath: PathOrFileDescriptor) {
+function checkFile(file: string) {
   try {
-    const text = readFileSync(filePath).toString();
+    const filePath = join(process.cwd(), file);
+    const content = readFileSync(filePath).toString();
 
-    const matchedRegex = matchRegex(text);
+    const matchedRegex = matchRegex(content);
     const matched = Object.entries(matchedRegex);
 
-    const outOfCharResult = outOfChar.detect(text);
+    const outOfCharResult = outOfChar.detect(content);
 
     const isVulnerable = outOfCharResult?.length > 0 || matched.length > 0;
     if (!isVulnerable) return;
 
     logger.prompt.message(
       `${pc.red('Vulnerable file:')} ${pc.yellow(
-        relative(process.cwd(), filePath.toString())
+        relative(process.cwd(), filePath)
       )}`
     );
 
