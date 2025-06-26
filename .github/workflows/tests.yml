@@ -30,13 +30,14 @@ jobs:
           cd example
           ../cli/bin/cursor-rules.js init -f
           ls -la
-          test -d ".cursor/rules/cursor-rules.mdc" || { echo "Rule not found"; exit 1; }
-          test -d ".cursor/rules/project-structure.mdc" || { echo "Rule not found"; exit 1; }
-          test -d ".cursor/rules/task-list.mdc" || { echo "Rule not found"; exit 1; }
-          test -d ".cursor/rules/use-bun-instead-of-node-vite-npm-pnpm.mdc" || { echo "Rule not found"; exit 1; }
-          test -d ".cursor/rules/bad-rule.mdc" || { echo "Rule not found"; exit 1; }
-          test -d "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
-          test -d "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
+          test -f ".cursor/rules/cursor-rules.mdc" || { echo "Cursor rule not found"; exit 1; }
+          test -f ".cursor/rules/project-structure.mdc" || { echo "Project structure rule not found"; exit 1; }
+          test -f ".cursor/rules/task-list.mdc" || { echo "Task list rule not found"; exit 1; }
+          test -f ".cursor/rules/use-bun-instead-of-node-vite-npm-pnpm.mdc" || { echo "Bun rule not found"; exit 1; }
+          test -f ".cursor/rules/bad-rule.mdc" || { echo "Bad rule not found"; exit 1; }
+          test -f "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
+          test -f "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
+          echo "Init action test passed"
   repomix-action-test:
     name: Repomix action test
     runs-on: ubuntu-latest
@@ -50,8 +51,9 @@ jobs:
           cd example
           ../cli/bin/cursor-rules.js repomix
           ls -la
-          test -d "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
-          test -d "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
+          test -f "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
+          test -f "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
+          echo "Repomix action test passed"
   scan-action-test:
     name: Scan action test
     runs-on: ubuntu-latest
@@ -63,4 +65,5 @@ jobs:
       - run: bun install --frozen-lockfile && bun prepublishOnly
       - run: |
           cd example
-          ../cli/bin/cursor-rules.js scan | grep -c "Vulnerable files:" | grep 4 || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js scan | grep -c "Vulnerable file:" | grep 4 || { echo "Not found"; exit 1;}
+          echo "Scan action test passed"
