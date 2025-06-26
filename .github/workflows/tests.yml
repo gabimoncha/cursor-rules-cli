@@ -66,4 +66,7 @@ jobs:
       - run: |
           cd example
           ../cli/bin/cursor-rules.js scan | grep -c "Vulnerable file:" | grep 4 || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js scan | grep -c "Run cursor-rules scan --sanitize to fix the files ⚠️" | grep 1 || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js scan -s | grep -c "Fixed 4 files ✅" | grep 1 || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js scan -s | grep -c "All files are safe ✅" | grep 1 || { echo "Not found"; exit 1;}
           echo "Scan action test passed"
