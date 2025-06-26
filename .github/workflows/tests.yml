@@ -3,6 +3,8 @@ name: Tests
 on:
   push:
     branches: ["main", "audit" ]
+env:
+  CI: true
 
 jobs:
   commander-tabtab-test:

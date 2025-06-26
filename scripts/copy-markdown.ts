@@ -12,16 +12,7 @@ export async function copyTemplates() {
     'templates',
     'rules-default'
   );
-
-  const awesomeTemplatesDir = path.join(
-    process.cwd(),
-    'lib',
-    'templates',
-    'awesome-cursorrules'
-  );
-
   await fs.mkdir(templatesDir, { recursive: true });
-  await fs.mkdir(awesomeTemplatesDir, { recursive: true });
 
   // Copy default rules
   const rulesDefault = path.join(
@@ -45,6 +36,19 @@ export async function copyTemplates() {
   }
 
   // Copy the awesome cursor rules after checking for vulnerabilities
+  if (process.env.CI) {
+    console.log('Skipping awesome cursor rules copy in CI');
+    return;
+  }
+
+  const awesomeTemplatesDir = path.join(
+    process.cwd(),
+    'lib',
+    'templates',
+    'awesome-cursorrules'
+  );
+  await fs.mkdir(awesomeTemplatesDir, { recursive: true });
+
   const awesomeRulesNew = path.join(
     process.cwd(),
     '..',
