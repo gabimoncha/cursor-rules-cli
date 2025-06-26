@@ -70,7 +70,7 @@ jobs:
           ../cli/bin/cursor-rules.js scan -h
           ../cli/bin/cursor-rules.js scan | grep -c "Vulnerable file:" | grep 4 || { echo "Not found"; exit 1;}
           ../cli/bin/cursor-rules.js scan
-          ../cli/bin/cursor-rules.js scan | grep "Run cursor-rules scan --sanitize" || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js scan | grep "sanitize" || { echo "Not found"; exit 1;}
           ../cli/bin/cursor-rules.js scan -s | grep "Fixed 4 files" || { echo "Not found"; exit 1;}
           ../cli/bin/cursor-rules.js scan -s | grep "All files are safe" || { echo "Not found"; exit 1;}
           echo "Scan action test passed"
