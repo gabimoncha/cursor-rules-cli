@@ -153,8 +153,8 @@ describe('commander-tabtab', () => {
         .map(([_, oShort]) => oShort?.name)
         .filter(Boolean);
 
-      expect(optionLongNames).toHaveLength(5);
-      expect(optionShortNames).toHaveLength(4);
+      expect(optionLongNames).toHaveLength(6);
+      expect(optionShortNames).toHaveLength(5);
 
       expect(optionLongNames).toMatchObject([
         '--verbose',
@@ -162,8 +162,9 @@ describe('commander-tabtab', () => {
         '--path',
         '--filter',
         '--pattern',
+        '--sanitize',
       ]);
-      expect(optionShortNames).toMatchObject(['-q', '-p', '-f', '-P']);
+      expect(optionShortNames).toMatchObject(['-q', '-p', '-f', '-P', '-s']);
     });
 
     it('should return all options for completion command', () => {

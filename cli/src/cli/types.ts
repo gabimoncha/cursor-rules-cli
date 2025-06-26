@@ -15,6 +15,7 @@ export interface CliOptions extends OptionValues {
   path?: string;
   filter?: string;
   pattern?: string;
+  sanitize?: boolean;
 
   // Completion Options
   install?: boolean;

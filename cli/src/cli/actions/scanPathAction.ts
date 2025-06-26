@@ -1,17 +1,24 @@
-import { readdirSync, readFileSync, lstatSync } from 'node:fs';
+import { readdirSync, readFileSync, lstatSync, writeFileSync } from 'node:fs';
 import { join, resolve, relative, dirname } from 'node:path';
 import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
 import outOfChar from 'out-of-character';
 import { matchRegex } from '~/audit/matchRegex.js';
+import { regexTemplates } from '~/audit/regex.js';
 
 export interface ScanOptions {
   path: string;
   filter?: string;
   pattern: string;
+  sanitize?: boolean;
 }
 
-export const runScanPathAction = ({ path, filter, pattern }: ScanOptions) => {
+export const runScanPathAction = ({
+  path,
+  filter,
+  pattern,
+  sanitize,
+}: ScanOptions) => {
   try {
     const targetPath = resolve(path);
     logger.info(pc.blue(`📂 Scanning path: ${path}`));
@@ -62,7 +69,7 @@ export const runScanPathAction = ({ path, filter, pattern }: ScanOptions) => {
       return;
     }
 
-    logger.info(pc.green(`\n✅ Found ${totalFiles} files total:`));
+    logger.info(pc.green(`\nFound ${totalFiles} files total:`));
 
     for (const [directory, dirInfo] of filteredPathMap) {
       logger.log(
@@ -79,7 +86,20 @@ export const runScanPathAction = ({ path, filter, pattern }: ScanOptions) => {
       }
     }
 
-    pathsToScan.forEach(checkFile);
+    let count = 0;
+    pathsToScan.forEach((file) => (count += checkFile(file, sanitize)));
+
+    if (count === 0) {
+      logger.info(pc.green(`\nAll files are safe ✅`));
+    } else if (sanitize) {
+      logger.info(pc.green(`\nFixed ${count} files ✅`));
+    } else {
+      logger.info(
+        `\nRun ${pc.yellow('cursor-rules scan --sanitize')} to fix the file${
+          count > 1 ? 's' : ''
+        } ⚠️`
+      );
+    }
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`Failed to scan path: ${error.message}`);
@@ -234,7 +254,7 @@ function matchFileName(filename: string, pattern: string) {
   }
 }
 
-function checkFile(file: string) {
+function checkFile(file: string, sanitize?: boolean) {
   try {
     const filePath = join(process.cwd(), file);
     const content = readFileSync(filePath).toString();
@@ -245,7 +265,7 @@ function checkFile(file: string) {
     const outOfCharResult = outOfChar.detect(content);
 
     const isVulnerable = outOfCharResult?.length > 0 || matched.length > 0;
-    if (!isVulnerable) return;
+    if (!isVulnerable) return 0;
 
     logger.prompt.message(
       `${pc.red('Vulnerable file:')} ${pc.yellow(
@@ -282,8 +302,27 @@ function checkFile(file: string) {
         );
       });
     }
+    if (!sanitize) return 1;
+
+    let fixedContent = content;
+    if (matched.length > 0) {
+      matched.forEach(([template]) => {
+        fixedContent = fixedContent.replace(
+          regexTemplates[template as keyof typeof regexTemplates],
+          ''
+        );
+      });
+    }
+
+    if (outOfCharResult?.length > 0) {
+      fixedContent = outOfChar.replace(fixedContent);
+    }
+
+    writeFileSync(filePath, fixedContent);
+    return 1;
   } catch (e) {
     console.log(e);
     logger.quiet(pc.yellow(`\n No ${file} found.`));
+    return 0;
   }
 }

@@ -94,6 +94,10 @@ export const setupProgram = (programInstance: Command = program) => {
       '-P, --pattern <pattern>',
       'regex pattern to apply to the scan (default: "\\.cursorrules|.*\\.mdc")'
     )
+    .option(
+      '-s, --sanitize',
+      'sanitize the files that are vulnerable (recommended)'
+    )
     .action(commanderActionEndpoint);
 
   programInstance
@@ -218,6 +222,7 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
       path: options.path,
       filter: options.filter,
       pattern: options.pattern ?? '\\.cursorrules|.*\\.mdc',
+      sanitize: options.sanitize,
     });
     return;
   }
