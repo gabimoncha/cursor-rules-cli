@@ -28,7 +28,7 @@ jobs:
       - run: bun install --frozen-lockfile && bun prepublishOnly
       - run: |
           cd example
-          ../cli/bin/cursor-rules init -f
+          ../cli/bin/cursor-rules.js init -f
           ls -la
           test -d ".cursor/rules/cursor-rules.mdc" || { echo "Rule not found"; exit 1; }
           test -d ".cursor/rules/project-structure.mdc" || { echo "Rule not found"; exit 1; }
@@ -48,7 +48,7 @@ jobs:
       - run: bun install --frozen-lockfile && bun prepublishOnly
       - run: |
           cd example
-          ../cli/bin/cursor-rules repomix
+          ../cli/bin/cursor-rules.js repomix
           ls -la
           test -d "repomix-output.xml" || { echo "Repomix output not found"; exit 1; }
           test -d "repomix.config.json" || { echo "Repomix config not found"; exit 1; }
@@ -63,4 +63,4 @@ jobs:
       - run: bun install --frozen-lockfile && bun prepublishOnly
       - run: |
           cd example
-          ../cli/bin/cursor-rules scan | grep -c "Vulnerable files:" | grep 4 || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js scan | grep -c "Vulnerable files:" | grep 4 || { echo "Not found"; exit 1;}
