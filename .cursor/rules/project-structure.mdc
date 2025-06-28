@@ -5,58 +5,64 @@ alwaysApply: false
 ---
 # Cursor Rules CLI
 
-A CLI tool to bootstrap and manage Cursor rules, enabling AI-assisted guidance across any codebase from the comfort of the terminal.
+A command-line tool for bootstrapping and maintaining **Cursor IDE** rule files in any project, offering interactive setup, auditing, and repository summarisation via Repomix.
 
 ## Purpose
 
-Provide an easy-to-use command-line interface for installing, generating and maintaining **Cursor rules** so that the Cursor IDE (or any LLM) can immediately understand the structure, conventions and workflows of a project.
+Provide developers with an easy-to-use CLI that:
+1. Installs default and community **Cursor rules** into the current repository.
+2. Generates a compact XML snapshot of the codebase using **Repomix** so AI assistants get rich context.
+3. Audits and sanitises existing rule files for potential security issues.
+4. Offers quality-of-life features such as shell-completion, version checks, and update notifications.
 
 ## Key features
 
-- 🚀 **Interactive setup (`init`)** – scaffolds the `.cursor/rules` directory with sensible defaults.
-- 📦 **Rule installation** – installs both first-party templates and community rules from `awesome-cursorrules`.
-- 🪄 **Repomix integration** – produces a compressed XML snapshot of the repository for large-context models.
-- 🛡 **Audit & list commands** – inspect existing rules and project paths.
-- 🔄 **Auto-update & version check** – notifies users when a new CLI version is available.
+- 🚀 **Interactive init** – guided prompts to install rule templates and (optionally) run Repomix.
+- 🧩 **Template library** – ships with default rules plus [awesome-cursorrules] templates.
+- 🔍 **Audit & Scan** – detect and optionally fix vulnerable or malformed rule files.
+- 🪄 **Repomix integration** – create `repomix-output.xml` & `repomix.config.json` with sensible defaults.
+- 🖥 **Shell completion** – install/uninstall tab-completion for supported shells.
+- 📦 **Workspaces ready** – published as a Bun package, compiled to ESM JavaScript.
 
 ## Directory structure
 
 ```tree
 .
-├── .github/                   # Continuous-integration workflows (tests, releases)
-│   └── workflows/
-│       └── tests.yml          # Runs the Bun test suite on each push
-├── cli/                       # **Primary package** – all CLI source and build artifacts
-│   ├── bin/                   # Executable entry script (`cursor-rules`)
-│   ├── src/                   # TypeScript source organised by domain
-│   │   ├── audit/             # Unicode & security helpers
-│   │   ├── cli/               # Command definitions & action handlers
-│   │   ├── core/              # Business logic (updates, rule install, etc.)
-│   │   ├── shared/            # Constants, logger and error helpers
-│   │   └── templates/         # Default rule and instruction markdown templates
-│   ├── package.json           # npm manifest for the CLI package
-│   ├── tsconfig*.json         # TypeScript build and IDE configs
-│   └── README.md              # CLI-specific documentation
-├── docs/                      # Additional markdown docs (commands, contributing, guides)
-├── example/                   # Sample project used in tests & demonstrations
-│   ├── parent_folder/         # Nested structure showcasing rule discovery
-│   └── single_folder/         # Flat example with its own `.cursor` rules
-├── scripts/                   # Maintenance / helper scripts executed via Bun
-├── .cursor/                   # **This repository's own Cursor rules** (including this file)
-├── FUTURE_ENHANCEMENTS.md     # Road-map and backlog
-├── package.json               # Workspace root manifest (Yarn workspaces & scripts)
-├── tsconfig.json              # Workspace-level TypeScript config
-└── README.md                  # Project overview seen on GitHub
+├── .github/                 # GitHub configuration and CI workflows
+│   └── workflows/           # Continuous-integration definitions (tests, release)
+├── awesome-cursorrules/     # Git submodule with a catalogue of community rule templates
+├── cli/                     # Source for the published `@gabimoncha/cursor-rules` package
+│   ├── bin/                 # Executable entry file distributed on npm
+│   ├── src/                 # TypeScript source code
+│   │   ├── audit/           # Regex & Unicode spoofing detection helpers
+│   │   ├── cli/             # Command implementations (init, list, repomix, scan, …)
+│   │   ├── core/            # Business-logic utilities shared across commands
+│   │   ├── shared/          # Logger, constants, error handling, etc.
+│   │   └── templates/       # Built-in rule templates copied during `init`
+│   ├── package.json         # Manifest for the CLI workspace
+│   └── README.md            # Package-level documentation
+├── docs/                    # Detailed markdown documentation (guide, commands, contributing)
+├── example/                 # Lightweight sample project used in tests & demos
+│   ├── parent_folder/       # Nested example showcasing recursive scanning
+│   └── single_folder/       # Alternative flat example structure
+├── scripts/                 # Development helper scripts (template copy, vulnerability check)
+├── .tool-versions           # Toolchain versions (e.g., Yarn)
+├── FUTURE_ENHANCEMENTS.md   # Roadmap and upcoming improvements
+├── LICENSE                  # MIT license
+├── package.json             # Root workspace manifest (Yarn workspaces & scripts)
+└── README.md                # High-level project overview and usage instructions
 ```
 
 ## Architecture
 
-1. **CLI layer** – built with `commander` and `@clack/prompts` for rich, interactive commands.
-2. **Core services** – pure functions that implement rule installation, version checks and Repomix generation.
-3. **Templates layer** – markdown scaffolds shipped inside the package; copied & customised during `init`.
-4. **Utilities & shared** – logger, error handling and constants reused throughout the codebase.
+The CLI is published as an **ESM Bun package** and organised as a workspace inside a monorepo:
 
-The design is intentionally modular: each layer can evolve independently and is covered by dedicated unit tests (located under `cli/src/core/__tests__`).
+1. **Commander.js** powers the command parser (`cli/src/cli/cliRun.ts`).
+2. Each command is implemented as an async function under `cli/src/cli/actions/*` and re-exports utilities from `core` and `shared`.
+3. Business logic (rule installation, update checks, etc.) lives in `cli/src/core/*`.
+4. **Repomix** is invoked programmatically to generate a compressed view of the repository.
+5. Build pipeline compiles TypeScript → ESM JS via `tsc`, aliases paths, and copies markdown templates.
+6. Automation (CI runs on Bun inside GitHub Actions) ensures tests & smoke checks pass for every push.
 
 ## Usage
 
@@ -64,25 +70,33 @@ The design is intentionally modular: each layer can evolve independently and is 
 # Install globally with Bun
 bun add -g @gabimoncha/cursor-rules
 
-# Initialise rules in an existing repo
+# Initialise rules in the current project
 cursor-rules init
 
-# Generate a Repomix snapshot
+# Generate Repomix snapshot only
 cursor-rules repomix
+
+# List installed rules
+cursor-rules list
 ```
 
 ## Technical implementation
 
-The project is built with:
-- **TypeScript** – strict, ES2022-targeted
-- **Bun** – fast runtime & package manager used in CI
-- **Commander.js** – command parsing
-- **@clack/prompts** – TUI prompts
-- **Repomix** – repository summarisation
-- **Zod** – runtime validation
+- **TypeScript 5** for type-safe source.
+- **Bun** as runtime, package manager & test runner.
+- **Commander.js** for CLI ergonomics.
+- **@clack/prompts** for interactive terminal UX.
+- **Repomix** for repository summarisation.
+- **Picocolors** for colourful output.
 
 ## Future Enhancements
 
-- 🔍 Rule validation & linting
-- 🧩 Additional language-/framework-specific templates
-- 🌐 Web UI for visual rule management
+See `FUTURE_ENHANCEMENTS.md` for the full roadmap, including:
+- Rule validation & linting
+- Additional specialised rule templates (React, Python, Go, …)
+- Web UI for rule management
+- Deeper integration with code-analysis tools
+
+---
+
+*After saving this file you might need to refresh the Explorer sidebar or restart Cursor to see it in the tree.*

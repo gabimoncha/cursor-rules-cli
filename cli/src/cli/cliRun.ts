@@ -76,11 +76,6 @@ export const setupProgram = (programInstance: Command = program) => {
     .action(commanderActionEndpoint);
 
   programInstance
-    .command('list')
-    .description('list all rules')
-    .action(commanderActionEndpoint);
-
-  programInstance
     .command('repomix')
     .description('generate repomix output with recommended settings')
     .action(commanderActionEndpoint);
@@ -89,15 +84,23 @@ export const setupProgram = (programInstance: Command = program) => {
     .command('scan')
     .description('scan and check all files in the specified path')
     .option('-p, --path <path>', 'path to scan', '.')
-    .option('-f, --filter <filter>', 'filter to apply to the scan')
+    .option(
+      '-f, --filter <filter>',
+      'filter to allow only directories and files that contain the string (similar to node test)'
+    )
     .option(
       '-P, --pattern <pattern>',
-      'regex pattern to apply to the scan (default: "\\.cursorrules|.*\\.mdc")'
+      'regex pattern to apply to the scanned files (default: "\\.cursorrules|.*\\.mdc")'
     )
     .option(
       '-s, --sanitize',
-      'sanitize the files that are vulnerable (recommended)'
+      '(recommended) sanitize the files that are vulnerable'
     )
+    .action(commanderActionEndpoint);
+
+  programInstance
+    .command('list')
+    .description('list all rules')
     .action(commanderActionEndpoint);
 
   programInstance

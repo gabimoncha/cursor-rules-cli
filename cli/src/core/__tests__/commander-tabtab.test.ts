@@ -27,9 +27,9 @@ describe('commander-tabtab', () => {
 
       expect(listOfCommands).toMatchObject([
         'init',
-        'list',
         'repomix',
         'scan',
+        'list',
         'completion',
       ]);
     });
@@ -44,16 +44,16 @@ describe('commander-tabtab', () => {
         description: 'start the setup process',
       });
       expect(commands).toContainEqual({
-        name: 'list',
-        description: 'list all rules',
-      });
-      expect(commands).toContainEqual({
         name: 'repomix',
         description: 'generate repomix output with recommended settings',
       });
       expect(commands).toContainEqual({
         name: 'scan',
         description: 'scan and check all files in the specified path',
+      });
+      expect(commands).toContainEqual({
+        name: 'list',
+        description: 'list all rules',
       });
       expect(commands).toContainEqual({
         name: 'completion',

@@ -64,11 +64,21 @@ export const runInitAction = async (opt: CliOptions) => {
           })),
           required: false,
         }),
-      awesomeRules: () =>
-        multiselect({
-          message: `Which awesome rules would you like to add? ${pc.yellow(
-            'source: https://github.com/PatrickJS/awesome-cursorrules'
-          )}`,
+
+      addAwesomeRules: () =>
+        select({
+          message: 'Do you want to add awesome rules?',
+          options: [
+            { value: true, label: 'Yes' },
+            { value: false, label: 'No', hint: 'you can add them later' },
+          ],
+        }),
+
+      awesomeRules: async ({ results }) => {
+        if (!results.addAwesomeRules) return [];
+
+        return multiselect({
+          message: 'Which awesome rules would you like to add?',
           options: awesomeTemplateFiles.map((file) => ({
             value: file,
             // Capitalizes the first letter of each word
@@ -84,7 +94,8 @@ export const runInitAction = async (opt: CliOptions) => {
               .trim(),
           })),
           required: false,
-        }),
+        });
+      },
 
       runRepomix: async ({ results }) => {
         if (!results.rules?.includes('project-structure.md')) {
@@ -148,11 +159,11 @@ export const runInitAction = async (opt: CliOptions) => {
   if (group.rules.length > 0) {
     result = await installRules(rulesDir, opt.overwrite, group.rules);
   }
-  if (group.awesomeRules.length > 0) {
+  if (group.awesomeRules && (group.awesomeRules as string[]).length > 0) {
     result = await installRules(
       awesomeRulesDir,
       opt.overwrite,
-      group.awesomeRules
+      (group.awesomeRules as string[]) || []
     );
   }
 
