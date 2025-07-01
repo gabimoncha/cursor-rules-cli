@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { Command, Option } from 'commander';
+import { type Command, Option } from 'commander';
 import {
   getCommands,
   getOptions,
@@ -25,13 +25,7 @@ describe('commander-tabtab', () => {
 
       const listOfCommands = commands.map(({ name, description }) => name);
 
-      expect(listOfCommands).toMatchObject([
-        'init',
-        'repomix',
-        'scan',
-        'list',
-        'completion',
-      ]);
+      expect(listOfCommands).toMatchObject(['init', 'repomix', 'scan', 'list', 'completion']);
     });
 
     it('should extract all command names and descriptions', () => {
@@ -53,8 +47,7 @@ describe('commander-tabtab', () => {
       });
       expect(commands).toContainEqual({
         name: 'list',
-        description:
-          'list all rules in the current directory (.cursorrules or .mdc files)',
+        description: 'list all rules in the current directory (.cursorrules or .mdc files)',
       });
       expect(commands).toContainEqual({
         name: 'completion',
@@ -69,10 +62,7 @@ describe('commander-tabtab', () => {
 
       expect(options).toHaveLength(1);
 
-      const listOfOptions = options.map(([long, short]) => [
-        long.name,
-        short?.name,
-      ]);
+      const listOfOptions = options.map(([long, short]) => [long.name, short?.name]);
 
       expect(listOfOptions).toMatchObject([['--version', '-v']]);
     });
@@ -97,9 +87,7 @@ describe('commander-tabtab', () => {
       const options = getOptions(initCommand);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
-      const optionShortNames = options
-        .map(([_, oShort]) => oShort?.name)
-        .filter(Boolean);
+      const optionShortNames = options.map(([_, oShort]) => oShort?.name).filter(Boolean);
 
       expect(optionLongNames).toHaveLength(5);
       expect(optionShortNames).toHaveLength(4);
@@ -119,18 +107,12 @@ describe('commander-tabtab', () => {
       const options = getOptions(listCommand);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
-      const optionShortNames = options
-        .map(([_, oShort]) => oShort?.name)
-        .filter(Boolean);
+      const optionShortNames = options.map(([_, oShort]) => oShort?.name).filter(Boolean);
 
       expect(optionLongNames).toHaveLength(3);
       expect(optionShortNames).toHaveLength(2);
 
-      expect(optionLongNames).toMatchObject([
-        '--verbose',
-        '--quiet',
-        '--pattern',
-      ]);
+      expect(optionLongNames).toMatchObject(['--verbose', '--quiet', '--pattern']);
       expect(optionShortNames).toMatchObject(['-q', '-P']);
     });
 
@@ -139,9 +121,7 @@ describe('commander-tabtab', () => {
       const options = getOptions(repomixCommand);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
-      const optionShortNames = options
-        .map(([_, oShort]) => oShort?.name)
-        .filter(Boolean);
+      const optionShortNames = options.map(([_, oShort]) => oShort?.name).filter(Boolean);
 
       expect(optionLongNames).toHaveLength(2);
       expect(optionShortNames).toHaveLength(1);
@@ -154,9 +134,7 @@ describe('commander-tabtab', () => {
       const options = getOptions(scanCommand);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
-      const optionShortNames = options
-        .map(([_, oShort]) => oShort?.name)
-        .filter(Boolean);
+      const optionShortNames = options.map(([_, oShort]) => oShort?.name).filter(Boolean);
 
       expect(optionLongNames).toHaveLength(6);
       expect(optionShortNames).toHaveLength(5);
@@ -177,19 +155,12 @@ describe('commander-tabtab', () => {
       const options = getOptions(completionCommand);
 
       const optionLongNames = options.map(([oLong]) => oLong.name);
-      const optionShortNames = options
-        .map(([_, oShort]) => oShort?.name)
-        .filter(Boolean);
+      const optionShortNames = options.map(([_, oShort]) => oShort?.name).filter(Boolean);
 
       expect(optionLongNames).toHaveLength(4);
       expect(optionShortNames).toHaveLength(3);
 
-      expect(optionLongNames).toMatchObject([
-        '--verbose',
-        '--quiet',
-        '--install',
-        '--uninstall',
-      ]);
+      expect(optionLongNames).toMatchObject(['--verbose', '--quiet', '--install', '--uninstall']);
       expect(optionShortNames).toMatchObject(['-q', '-i', '-u']);
     });
   });

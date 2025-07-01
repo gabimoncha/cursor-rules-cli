@@ -1,9 +1,4 @@
-import {
-  getShellFromEnv,
-  isShellSupported,
-  install,
-  uninstall,
-} from '@pnpm/tabtab';
+import { getShellFromEnv, isShellSupported, install, uninstall } from '@pnpm/tabtab';
 import { logger } from '~/shared/logger.js';
 import { SHELL_LOCATIONS } from '~/cli/types.js';
 
@@ -24,9 +19,7 @@ export const runInstallCompletionAction = async () => {
     });
 
     logger.info('✅ Tab completion installed successfully!');
-    logger.info(
-      `Please restart your terminal or run: source ${SHELL_LOCATIONS[shell]}`
-    );
+    logger.info(`Please restart your terminal or run: source ${SHELL_LOCATIONS[shell]}`);
   } catch (error) {
     logger.error('Failed to install completion:', error);
   }
@@ -46,9 +39,7 @@ export const runUninstallCompletionAction = async () => {
     });
 
     logger.info('✅ Tab completion uninstalled successfully!');
-    logger.info(
-      `Please restart your terminal or run: source ${SHELL_LOCATIONS[shell]}`
-    );
+    logger.info(`Please restart your terminal or run: source ${SHELL_LOCATIONS[shell]}`);
   } catch (error) {
     logger.error('Failed to uninstall completion:', error);
   }

@@ -11,8 +11,7 @@ export const cursorRulesLogLevels = {
   DEBUG: 4, // debug, trace
 } as const;
 
-export type CursorRulesLogLevel =
-  (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
+export type CursorRulesLogLevel = (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
 
 class CursorRulesLogger {
   private level: CursorRulesLogLevel = cursorRulesLogLevels.INFO;
@@ -144,9 +143,7 @@ class CursorRulesLogger {
   private formatArgs(args: unknown[]): string {
     return args
       .map((arg) =>
-        typeof arg === 'object'
-          ? util.inspect(arg, { depth: null, colors: true })
-          : arg
+        typeof arg === 'object' ? util.inspect(arg, { depth: null, colors: true }) : arg
       )
       .join(' ');
   }

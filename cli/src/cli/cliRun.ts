@@ -39,16 +39,9 @@ export class RootProgram extends Command {
     cmd.description('Cursor Rules - Add awesome IDE rules to your codebase');
     // Basic Options
     cmd.addOption(
-      new Option(
-        '--verbose',
-        'enable verbose logging for detailed output'
-      ).conflicts('quiet')
+      new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet')
     );
-    cmd.addOption(
-      new Option('-q, --quiet', 'disable all output to stdout').conflicts(
-        'verbose'
-      )
-    );
+    cmd.addOption(new Option('-q, --quiet', 'disable all output to stdout').conflicts('verbose'));
     return cmd;
   }
 }
@@ -64,14 +57,8 @@ export const setupProgram = (programInstance: Command = program) => {
     .command('init')
     .description('start the setup process')
     // Rules Options
-    .option(
-      '-f, --force',
-      'overwrites already existing rules if filenames match'
-    )
-    .option(
-      '-r, --repomix',
-      'generate repomix output with recommended settings'
-    )
+    .option('-f, --force', 'overwrites already existing rules if filenames match')
+    .option('-r, --repomix', 'generate repomix output with recommended settings')
     .option('-o, --overwrite', 'overwrite existing rules')
     .action(commanderActionEndpoint);
 
@@ -92,17 +79,12 @@ export const setupProgram = (programInstance: Command = program) => {
       '-P, --pattern <pattern>',
       'regex pattern to apply to the scanned files (default: "\\.cursorrules|.*\\.mdc")'
     )
-    .option(
-      '-s, --sanitize',
-      '(recommended) sanitize the files that are vulnerable'
-    )
+    .option('-s, --sanitize', '(recommended) sanitize the files that are vulnerable')
     .action(commanderActionEndpoint);
 
   programInstance
     .command('list')
-    .description(
-      'list all rules in the current directory (.cursorrules or .mdc files)'
-    )
+    .description('list all rules in the current directory (.cursorrules or .mdc files)')
     .option(
       '-P, --pattern <pattern>',
       'regex pattern to apply to the scanned files (default: "\\.cursorrules|.*\\.mdc")'
@@ -111,16 +93,8 @@ export const setupProgram = (programInstance: Command = program) => {
 
   programInstance
     .command('completion')
-    .addOption(
-      new Option('-i, --install', 'install tab autocompletion').conflicts(
-        'uninstall'
-      )
-    )
-    .addOption(
-      new Option('-u, --uninstall', 'uninstall tab autocompletion').conflicts(
-        'install'
-      )
-    )
+    .addOption(new Option('-i, --install', 'install tab autocompletion').conflicts('uninstall'))
+    .addOption(new Option('-u, --uninstall', 'uninstall tab autocompletion').conflicts('install'))
     .description('setup shell completion')
     .action(async (options) => {
       if (options.uninstall) {
@@ -149,8 +123,7 @@ export const run = async () => {
 
     // Custom error handling function
     const configOutput = program.configureOutput();
-    const originalOutputError =
-      configOutput.outputError || ((str, write) => write(str));
+    const originalOutputError = configOutput.outputError || ((str, write) => write(str));
 
     program.configureOutput({
       outputError: (str, write) => {
@@ -185,10 +158,7 @@ export const run = async () => {
   }
 };
 
-const commanderActionEndpoint = async (
-  options: CliOptions = {},
-  command: Command
-) => {
+const commanderActionEndpoint = async (options: CliOptions, command: Command) => {
   if (options.quiet) {
     logger.setLogLevel(cursorRulesLogLevels.SILENT);
   } else if (options.verbose) {
@@ -200,7 +170,7 @@ const commanderActionEndpoint = async (
   await runCli(options, command);
 };
 
-export const runCli = async (options: CliOptions = {}, command: Command) => {
+export const runCli = async (options: CliOptions, command: Command) => {
   if (options.version) {
     await runVersionAction();
     return;

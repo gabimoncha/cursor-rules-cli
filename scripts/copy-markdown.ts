@@ -7,21 +7,11 @@ import { logger } from '../cli/lib/shared/logger';
 
 export async function copyTemplates() {
   // Create the templates directory
-  const templatesDir = path.join(
-    process.cwd(),
-    'lib',
-    'templates',
-    'rules-default'
-  );
+  const templatesDir = path.join(process.cwd(), 'lib', 'templates', 'rules-default');
   await fs.mkdir(templatesDir, { recursive: true });
 
   // Copy default rules
-  const rulesDefault = path.join(
-    process.cwd(),
-    'src',
-    'templates',
-    'rules-default'
-  );
+  const rulesDefault = path.join(process.cwd(), 'src', 'templates', 'rules-default');
   const rulesDefaultFiles = await fs.readdir(rulesDefault, { recursive: true });
 
   for (const file of rulesDefaultFiles) {
@@ -53,20 +43,10 @@ export async function copyTemplates() {
     return;
   }
 
-  const awesomeTemplatesDir = path.join(
-    process.cwd(),
-    'lib',
-    'templates',
-    'awesome-cursorrules'
-  );
+  const awesomeTemplatesDir = path.join(process.cwd(), 'lib', 'templates', 'awesome-cursorrules');
   await fs.mkdir(awesomeTemplatesDir, { recursive: true });
 
-  const awesomeRulesNew = path.join(
-    process.cwd(),
-    '..',
-    'awesome-cursorrules',
-    'rules-new'
-  );
+  const awesomeRulesNew = path.join(process.cwd(), '..', 'awesome-cursorrules', 'rules-new');
 
   const rulesNewFiles = await fs.readdir(awesomeRulesNew, { recursive: true });
 
@@ -81,7 +61,7 @@ export async function copyTemplates() {
 
   const noun = count === 1 ? 'file' : 'files';
   if (count === 0) {
-    logger.info(pc.green(`\nAll files are safe ✅`));
+    logger.info(pc.green('\nAll files are safe ✅'));
   } else {
     logger.info(pc.green(`\nFixed ${count} ${noun} ✅`));
   }
@@ -98,12 +78,7 @@ export async function copyRepomixInstructions() {
   await fs.mkdir(repomixInstructionsDir, { recursive: true });
 
   // Copy repomix instructions
-  const repomixInstructions = path.join(
-    process.cwd(),
-    'src',
-    'templates',
-    'repomix-instructions'
-  );
+  const repomixInstructions = path.join(process.cwd(), 'src', 'templates', 'repomix-instructions');
 
   const file = 'instruction-project-structure.md';
 

@@ -11,7 +11,7 @@ interface DirectoryInfo {
 export function scanPath(
   pathStr: string,
   pattern: string,
-  isList: boolean = false
+  isList = false
 ): Map<string, DirectoryInfo> {
   const pathInfo = new Map<string, DirectoryInfo>();
 
@@ -26,7 +26,7 @@ export function scanPath(
     if (!isDir && !isList) {
       const parentDir = dirname(pathStr);
       const relativePath = relative(process.cwd(), parentDir) || '.';
-      const filename = pathStr.split('/').pop()!;
+      const filename = pathStr.split('/').pop() ?? '';
 
       if (!matchFileName(filename, pattern)) {
         return pathInfo;
@@ -41,51 +41,51 @@ export function scanPath(
       return pathInfo;
     }
 
-    readdirSync(pathStr)
-      .filter((entry) => excludeDefaultDirs(entry))
-      .forEach((entry) => {
-        const fullPath = join(pathStr, entry);
-        const stats = lstatSync(fullPath);
+    const filteredDirs = readdirSync(pathStr).filter((entry) => excludeDefaultDirs(entry));
 
-        if (stats.isDirectory()) {
-          // Recursively scan subdirectory and merge results
-          const subpathInfo = scanPath(fullPath, pattern);
-          for (const [subdir, subdirInfo] of subpathInfo) {
-            if (pathInfo.has(subdir)) {
-              // Merge with existing directory info
-              const existing = pathInfo.get(subdir)!;
-              existing.count += subdirInfo.count;
-              existing.files.push(...subdirInfo.files);
-            } else {
-              // Add new directory info
-              pathInfo.set(subdir, {
-                count: subdirInfo.count,
-                path: subdirInfo.path,
-                files: [...subdirInfo.files],
-              });
-            }
-          }
-        } else if (stats.isFile() && matchFileName(entry, pattern)) {
-          // Check if file matches include/exclude patterns
-          const parentDir = dirname(fullPath);
-          const relativeParentDir = relative(process.cwd(), parentDir);
-          const displayDir = relativeParentDir || '.';
+    for (const entry of filteredDirs) {
+      const fullPath = join(pathStr, entry);
+      const stats = lstatSync(fullPath);
 
-          if (pathInfo.has(displayDir)) {
-            // Update existing directory info
-            const existing = pathInfo.get(displayDir)!;
-            existing.count++;
-            existing.files.push(entry);
+      if (stats.isDirectory()) {
+        // Recursively scan subdirectory and merge results
+        const subpathInfo = scanPath(fullPath, pattern);
+        for (const [subdir, subdirInfo] of subpathInfo) {
+          if (pathInfo.has(subdir)) {
+            // Merge with existing directory info
+            const existing = pathInfo.get(subdir) as DirectoryInfo;
+            existing.count += subdirInfo.count;
+            existing.files.push(...subdirInfo.files);
           } else {
-            // Create new directory info
-            pathInfo.set(displayDir, {
-              count: 1,
-              path: parentDir,
-              files: [entry],
+            // Add new directory info
+            pathInfo.set(subdir, {
+              count: subdirInfo.count,
+              path: subdirInfo.path,
+              files: [...subdirInfo.files],
             });
           }
         }
-      });
+      } else if (stats.isFile() && matchFileName(entry, pattern)) {
+        // Check if file matches include/exclude patterns
+        const parentDir = dirname(fullPath);
+        const relativeParentDir = relative(process.cwd(), parentDir);
+        const displayDir = relativeParentDir || '.';
+
+        if (pathInfo.has(displayDir)) {
+          // Update existing directory info
+          const existing = pathInfo.get(displayDir)!;
+          existing.count++;
+          existing.files.push(entry);
+        } else {
+          // Create new directory info
+          pathInfo.set(displayDir, {
+            count: 1,
+            path: parentDir,
+            files: [entry],
+          });
+        }
+      }
+    }
   } catch (error) {
     logger.warn(`Could not read directory: ${pathStr}`);
   }
@@ -142,8 +142,7 @@ const excludedDotDirs = [
   '.node_repl_history',
   '.pnp$',
 ];
-const defaultExcludePattern =
-  excludedDirs.join('$|^') + '$|^\\' + excludedDotDirs.join('$|^\\');
+const defaultExcludePattern = excludedDirs.join('$|^') + '$|^\\' + excludedDotDirs.join('$|^\\');
 
 function excludeDefaultDirs(filename: string) {
   const excludeRegex = new RegExp(defaultExcludePattern);

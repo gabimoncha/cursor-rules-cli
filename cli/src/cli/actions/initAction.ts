@@ -15,13 +15,9 @@ import {
   writeRepomixConfig,
   writeRepomixOutput,
 } from '~/cli/actions/repomixAction.js';
-import { CliOptions } from '~/cli/types.js';
+import type { CliOptions } from '~/cli/types.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
-import {
-  DEFAULT_REPOMIX_CONFIG,
-  REPOMIX_OPTIONS,
-  TEMPLATE_DIR,
-} from '~/shared/constants.js';
+import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 import { fileExists } from '~/core/fileExists.js';
 
@@ -39,8 +35,8 @@ export const runInitAction = async (opt: CliOptions) => {
     return;
   }
 
-  let templateFiles = await fs.readdir(rulesDir);
-  let awesomeTemplateFiles = await fs.readdir(awesomeRulesDir);
+  const templateFiles = await fs.readdir(rulesDir);
+  const awesomeTemplateFiles = await fs.readdir(awesomeRulesDir);
   let result = false;
 
   const group = await groupPrompt(
@@ -115,8 +111,7 @@ export const runInitAction = async (opt: CliOptions) => {
         });
       },
       repomixOptions: async ({ results }) => {
-        if (!results.runRepomix || opt.repomix)
-          return ['compress', 'removeEmptyLines'];
+        if (!results.runRepomix || opt.repomix) return ['compress', 'removeEmptyLines'];
 
         return multiselect({
           message: 'Repomix options',
@@ -185,9 +180,7 @@ export const runInitAction = async (opt: CliOptions) => {
     ...formattedOptions,
   };
 
-  const hasConfigFile = fileExists(
-    path.join(process.cwd(), 'repomix.config.json')
-  );
+  const hasConfigFile = fileExists(path.join(process.cwd(), 'repomix.config.json'));
 
   if (Boolean(group.runRepomix) && !hasConfigFile) {
     const repomixConfig = {

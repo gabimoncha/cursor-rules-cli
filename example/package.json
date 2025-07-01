@@ -1,8 +1,8 @@
 {
-	"name": "example",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"clean": "rm -rf repomix-output.xml repomix.config.json && find .cursor/rules -mindepth 1 ! -name 'bad-rule.mdc' -exec rm -rf -- {} +"
-	}
+  "name": "example",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf repomix-output.xml repomix.config.json && find .cursor/rules -mindepth 1 ! -name 'bad-rule.mdc' -exec rm -rf -- {} +"
+  }
 }

@@ -4,11 +4,7 @@ import fs from 'node:fs/promises';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { logger } from '~/shared/logger.js';
 import { fileExists } from '~/core/fileExists.js';
-import {
-  getPackageManager,
-  getPackageName,
-  getVersion,
-} from '~/core/packageJsonParse.js';
+import { getPackageManager, getPackageName, getVersion } from '~/core/packageJsonParse.js';
 import semver from 'semver';
 import pc from 'picocolors';
 
@@ -17,17 +13,12 @@ const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 // Function to check for updates and notify user
 export async function checkForUpdates() {
   try {
-    const { currentVersion, latestVersion, updateAvailable } =
-      await getLatestVersion();
+    const { currentVersion, latestVersion, updateAvailable } = await getLatestVersion();
     if (updateAvailable) {
       const isLocal = checkIfLocal();
-      logger.debug(
-        `cursor-rules installed ${isLocal ? 'locally' : 'globally'}`
-      );
+      logger.debug(`cursor-rules installed ${isLocal ? 'locally' : 'globally'}`);
 
-      const updateCommand = await getPackageManager(
-        isLocal ? 'upgrade' : 'global'
-      );
+      const updateCommand = await getPackageManager(isLocal ? 'upgrade' : 'global');
 
       const updateMessage = [
         '',
@@ -118,11 +109,7 @@ function getCacheDir() {
 
   // Use the user's home directory for the cache
   const homeDir = process.env.HOME || '.';
-  const cacheDir = path.join(
-    isLocal ? process.cwd() : homeDir,
-    '.cursor-rules-cli',
-    'cache'
-  );
+  const cacheDir = path.join(isLocal ? process.cwd() : homeDir, '.cursor-rules-cli', 'cache');
 
   // Ensure the cache directory exists
   if (!existsSync(cacheDir)) {

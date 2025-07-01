@@ -11,10 +11,7 @@
   },
   "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
   "license": "MIT",
-  "workspaces": [
-    "cli",
-    "example"
-  ],
+  "workspaces": ["cli", "example"],
   "scripts": {
     "repomix": "repomix --config repomix.config.json",
     "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepack",

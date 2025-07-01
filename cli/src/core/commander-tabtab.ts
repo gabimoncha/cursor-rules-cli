@@ -1,5 +1,5 @@
-import tabtab, { CompletionItem, getShellFromEnv } from '@pnpm/tabtab';
-import { Command, Option } from 'commander';
+import tabtab, { type CompletionItem, getShellFromEnv } from '@pnpm/tabtab';
+import type { Command, Option } from 'commander';
 
 const shell = getShellFromEnv(process.env);
 
@@ -20,10 +20,7 @@ export const getOptions = (targetCommand: Command): CompletionItem[][] => {
   });
 };
 
-export const filterByPrevArgs = (
-  options: CompletionItem[][],
-  prev: string[]
-): CompletionItem[] => {
+export const filterByPrevArgs = (options: CompletionItem[][], prev: string[]): CompletionItem[] => {
   return options
     .filter(([long, short]) => {
       const longOption = long.name;
@@ -31,34 +28,24 @@ export const filterByPrevArgs = (
 
       // filter conflicting options --verbose and --quiet, -q
       if (longOption === '--verbose') {
-        return (
-          !prev.includes('-q') &&
-          !prev.includes('--quiet') &&
-          !prev.includes(longOption)
-        );
+        return !prev.includes('-q') && !prev.includes('--quiet') && !prev.includes(longOption);
       }
 
       if (longOption === '--quiet' || shortOption === '-q') {
         return (
-          !prev.includes('--verbose') &&
-          !prev.includes(longOption) &&
-          !prev.includes(shortOption)
+          !prev.includes('--verbose') && !prev.includes(longOption) && !prev.includes(shortOption)
         );
       }
 
       if (longOption === '--install' || shortOption === '-i') {
         return (
-          !prev.includes('--uninstall') &&
-          !prev.includes(longOption) &&
-          !prev.includes(shortOption)
+          !prev.includes('--uninstall') && !prev.includes(longOption) && !prev.includes(shortOption)
         );
       }
 
       if (longOption === '--uninstall' || shortOption === '-u') {
         return (
-          !prev.includes('--install') &&
-          !prev.includes(longOption) &&
-          !prev.includes(shortOption)
+          !prev.includes('--install') && !prev.includes(longOption) && !prev.includes(shortOption)
         );
       }
 
@@ -69,23 +56,15 @@ export const filterByPrevArgs = (
     .flat();
 };
 
-export const filterByPrefix = (
-  options: CompletionItem[],
-  prefix: string
-): CompletionItem[] => {
-  return options.filter(
-    (option) => option.name.startsWith(prefix) || option.name === prefix
-  );
+export const filterByPrefix = (options: CompletionItem[], prefix: string): CompletionItem[] => {
+  return options.filter((option) => option.name.startsWith(prefix) || option.name === prefix);
 };
 
 export const findCommand = (program: Command, commandName: string) => {
   return program.commands.find((cmd) => cmd.name() === commandName);
 };
 
-export const commanderTabtab = async function (
-  program: Command,
-  binName: string
-) {
+export const commanderTabtab = async (program: Command, binName: string) => {
   const firstArg = process.argv.slice(2)[0];
   const prevFlags = process.argv.filter((arg) => arg.startsWith('-'));
 

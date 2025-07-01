@@ -13,12 +13,7 @@ export interface ScanOptions {
   sanitize?: boolean;
 }
 
-export const runScanRulesAction = ({
-  path,
-  filter,
-  pattern,
-  sanitize,
-}: ScanOptions) => {
+export const runScanRulesAction = ({ path, filter, pattern, sanitize }: ScanOptions) => {
   try {
     const targetPath = resolve(path);
     logger.info(pc.blue(`📂 Scanning path: ${path}`));
@@ -35,8 +30,7 @@ export const runScanRulesAction = ({
 
         // Check if filter matches any file path within this directory
         const matchesFile = dirInfo.files.filter((filename) => {
-          const fullFilePath =
-            dirPath === '.' ? filename : `${dirPath}/${filename}`;
+          const fullFilePath = dirPath === '.' ? filename : `${dirPath}/${filename}`;
           return fullFilePath.includes(filter);
         });
 
@@ -50,9 +44,7 @@ export const runScanRulesAction = ({
       }
 
       if (filteredPathMap.size === 0) {
-        logger.warn(
-          `No directories or files found matching filter: "${filter}"`
-        );
+        logger.warn(`No directories or files found matching filter: "${filter}"`);
         return;
       }
 
@@ -74,11 +66,7 @@ export const runScanRulesAction = ({
     for (const [directory, dirInfo] of filteredPathMap) {
       const noun = dirInfo.count === 1 ? 'rule' : 'rules';
 
-      logger.log(
-        `  ${pc.dim('•')} Found ${dirInfo.count} ${noun} in ${pc.cyan(
-          directory
-        )}`
-      );
+      logger.log(`  ${pc.dim('•')} Found ${dirInfo.count} ${noun} in ${pc.cyan(directory)}`);
     }
 
     const pathsToScan = [];
@@ -89,19 +77,17 @@ export const runScanRulesAction = ({
     }
 
     let count = 0;
-    pathsToScan.forEach((file) => (count += checkFile(file, sanitize)));
+    for (const file of pathsToScan) {
+      count += checkFile(file, sanitize);
+    }
 
     const noun = count === 1 ? 'file' : 'files';
     if (count === 0) {
-      logger.info(pc.green(`\nAll files are safe ✅`));
+      logger.info(pc.green('\nAll files are safe ✅'));
     } else if (sanitize) {
       logger.info(pc.green(`\nFixed ${count} ${noun} ✅`));
     } else {
-      logger.info(
-        `\nRun ${pc.yellow(
-          'cursor-rules scan --sanitize'
-        )} to fix the ${noun} ⚠️`
-      );
+      logger.info(`\nRun ${pc.yellow('cursor-rules scan --sanitize')} to fix the ${noun} ⚠️`);
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -125,29 +111,27 @@ export function checkFile(file: string, sanitize?: boolean) {
     if (!isVulnerable) return 0;
 
     logger.prompt.message(
-      `${pc.red('Vulnerable file:')} ${pc.yellow(
-        relative(process.cwd(), filePath)
-      )}`
+      `${pc.red('Vulnerable file:')} ${pc.yellow(relative(process.cwd(), filePath))}`
     );
 
     if (matched.length > 0) {
-      matched.forEach(([template, decoded]) => {
+      for (const [template, decoded] of matched) {
         const foundMsg = `Found${decoded ? ' hidden' : ''} ${template}`;
         const decodedMsg = `${decoded ? `:\n${decoded}` : ''}`;
         logger.prompt.message(`${pc.blue(foundMsg)}${decodedMsg}`);
-      });
+      }
     }
 
     if (!sanitize) return 1;
 
     let fixedContent = content;
     if (matched.length > 0) {
-      matched.forEach(([template]) => {
+      for (const [template] of matched) {
         fixedContent = fixedContent.replace(
           regexTemplates[template as keyof typeof regexTemplates],
           ''
         );
-      });
+      }
     }
 
     writeFileSync(filePath, fixedContent);

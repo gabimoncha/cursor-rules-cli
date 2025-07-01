@@ -24,11 +24,7 @@ export async function runListRulesAction(pattern: string) {
 
     for (const [directory, dirInfo] of pathMap) {
       const noun = dirInfo.count === 1 ? 'rule' : 'rules';
-      logger.log(
-        `  ${pc.dim('•')} Found ${dirInfo.count} ${noun} in ${pc.cyan(
-          directory
-        )}`
-      );
+      logger.log(`  ${pc.dim('•')} Found ${dirInfo.count} ${noun} in ${pc.cyan(directory)}`);
     }
 
     return;
@@ -38,9 +34,7 @@ export async function runListRulesAction(pattern: string) {
       logger.info('Run `cursor-rules help` to see all commands.');
 
       logger.quiet(pc.yellow('\n No .cursor/rules found.'));
-      logger.quiet(
-        pc.cyan('\n Run `cursor-rules init` to initialize the project.')
-      );
+      logger.quiet(pc.cyan('\n Run `cursor-rules init` to initialize the project.'));
       return;
     }
 

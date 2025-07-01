@@ -7,11 +7,7 @@ import {
   runCli as repomixAction,
 } from 'repomix';
 import { fileExists } from '~/core/fileExists.js';
-import {
-  DEFAULT_REPOMIX_CONFIG,
-  REPOMIX_OPTIONS,
-  TEMPLATE_DIR,
-} from '~/shared/constants.js';
+import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 
 export const runRepomixAction = async (quiet = false) => {
@@ -21,9 +17,7 @@ export const runRepomixAction = async (quiet = false) => {
     removeEmptyLines: true,
   };
 
-  const hasConfigFile = fileExists(
-    path.join(process.cwd(), 'repomix.config.json')
-  );
+  const hasConfigFile = fileExists(path.join(process.cwd(), 'repomix.config.json'));
 
   if (!hasConfigFile) {
     logger.prompt.step('Creating repomix config...');
@@ -113,22 +107,9 @@ export const writeRepomixOutput = async (
     } else if (totalTokens > 119_000) {
       logContextWindowWarning(totalTokens, ['128k', '132k', '200k', '1M']);
     } else if (totalTokens > 74_000) {
-      logContextWindowWarning(totalTokens, [
-        '120k',
-        '128k',
-        '132k',
-        '200k',
-        '1M',
-      ]);
+      logContextWindowWarning(totalTokens, ['120k', '128k', '132k', '200k', '1M']);
     } else if (totalTokens > 59_000) {
-      logContextWindowWarning(totalTokens, [
-        '75k',
-        '120k',
-        '128k',
-        '132k',
-        '200k',
-        '1M',
-      ]);
+      logContextWindowWarning(totalTokens, ['75k', '120k', '128k', '132k', '200k', '1M']);
     }
   } catch (err) {
     logger.debug(err);
@@ -140,35 +121,27 @@ export const writeRepomixConfig = async (config: RepomixConfig) => {
   try {
     const configPath = path.join(process.cwd(), 'repomix.config.json');
     writeFileSync(configPath, JSON.stringify(config, null, 2));
-    logger.prompt.info(
-      'Repomix config saved to:',
-      pc.cyan('./repomix.config.json')
-    );
+    logger.prompt.info('Repomix config saved to:', pc.cyan('./repomix.config.json'));
     logger.quiet('\n Repomix config file:', pc.cyan('./repomix.config.json'));
   } catch (err) {
     logger.prompt.warn('Error saving repomix config!');
   }
 };
 
-const logContextWindowWarning = (
-  totalTokens: number,
-  ctx_windows: string[]
-) => {
+const logContextWindowWarning = (totalTokens: number, ctx_windows: string[]) => {
   logger.prompt.outroForce(
     pc.yellow(
       `Total tokens: ${totalTokens.toLocaleString()}. Make sure to select any of the following models:`
     )
   );
-  ctx_windows.forEach((ctx_window) => {
+  for (const ctx_window of ctx_windows) {
     logger.force(pc.yellow(`${ctx_window} context window:`));
 
-    MODEL_CONTEXT_WINDOW[
+    for (const model_ctx_window of MODEL_CONTEXT_WINDOW[
       ctx_window as keyof typeof MODEL_CONTEXT_WINDOW
-    ].forEach((model_ctx_window) => {
+    ]) {
       const [model, ...modes] = model_ctx_window.split(' ');
-      logger.force(
-        `- ${pc.whiteBright(model)} ${pc.magentaBright(modes.join(' '))}`
-      );
-    });
-  });
+      logger.force(`- ${pc.whiteBright(model)} ${pc.magentaBright(modes.join(' '))}`);
+    }
+  }
 };

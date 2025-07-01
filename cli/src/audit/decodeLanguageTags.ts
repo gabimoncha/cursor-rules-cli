@@ -1,6 +1,6 @@
 export function decodeLanguageTags(encoded: string): string {
   let decoded = '';
-  for (let char of encoded) {
+  for (const char of encoded) {
     const codePoint = char.codePointAt(0);
 
     if (codePoint === undefined) {
@@ -18,7 +18,7 @@ export function decodeLanguageTags(encoded: string): string {
 
 export function encodeLanguageTags(text: string): string {
   let encoded = String.fromCodePoint(0xe0001);
-  for (let char of text) {
+  for (const char of text) {
     const codePoint = char.codePointAt(0);
 
     if (codePoint === undefined) {
@@ -31,11 +31,7 @@ export function encodeLanguageTags(text: string): string {
       asciiCodePoint = codePoint + 0xe0000;
     }
 
-    if (
-      asciiCodePoint &&
-      asciiCodePoint > 0xe0001 &&
-      asciiCodePoint < 0xe007f
-    ) {
+    if (asciiCodePoint && asciiCodePoint > 0xe0001 && asciiCodePoint < 0xe007f) {
       encoded += String.fromCodePoint(asciiCodePoint);
     }
   }

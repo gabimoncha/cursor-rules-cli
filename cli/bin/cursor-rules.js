@@ -9,7 +9,9 @@ const EXIT_CODES = {
 };
 
 if (major < 20) {
-  console.error(`Cursor Rules requires Node.js version 20 or higher. Current version: ${nodeVersion}\n`);
+  console.error(
+    `Cursor Rules requires Node.js version 20 or higher. Current version: ${nodeVersion}\n`
+  );
   process.exit(EXIT_CODES.ERROR);
 }
 
@@ -39,7 +41,7 @@ function setupErrorHandlers() {
   try {
     setupErrorHandlers();
     const cli = await import('../lib/cli/cliRun.js');
-    await cli.run()
+    await cli.run();
   } catch (error) {
     if (error instanceof Error) {
       console.error('Fatal Error:', {
@@ -53,4 +55,4 @@ function setupErrorHandlers() {
 
     process.exit(EXIT_CODES.ERROR);
   }
-})(); 
+})();
