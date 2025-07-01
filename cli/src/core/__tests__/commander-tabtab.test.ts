@@ -53,7 +53,8 @@ describe('commander-tabtab', () => {
       });
       expect(commands).toContainEqual({
         name: 'list',
-        description: 'list all rules',
+        description:
+          'list all rules in the current directory (.cursorrules or .mdc files)',
       });
       expect(commands).toContainEqual({
         name: 'completion',
@@ -122,11 +123,15 @@ describe('commander-tabtab', () => {
         .map(([_, oShort]) => oShort?.name)
         .filter(Boolean);
 
-      expect(optionLongNames).toHaveLength(2);
-      expect(optionShortNames).toHaveLength(1);
+      expect(optionLongNames).toHaveLength(3);
+      expect(optionShortNames).toHaveLength(2);
 
-      expect(optionLongNames).toMatchObject(['--verbose', '--quiet']);
-      expect(optionShortNames).toMatchObject(['-q']);
+      expect(optionLongNames).toMatchObject([
+        '--verbose',
+        '--quiet',
+        '--pattern',
+      ]);
+      expect(optionShortNames).toMatchObject(['-q', '-P']);
     });
 
     it('should return only global options for repomix command', () => {

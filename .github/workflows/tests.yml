@@ -73,3 +73,18 @@ jobs:
           ../cli/bin/cursor-rules.js scan -s | grep "Fixed 4 files" || { echo "Not found"; exit 1;}
           ../cli/bin/cursor-rules.js scan -s | grep "All files are safe" || { echo "Not found"; exit 1;}
           echo "Scan action test passed"
+  list-action-test:
+    name: List action test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+      - run: bun install --frozen-lockfile && bun prepublishOnly
+      - run: |
+          cd example
+          ../cli/bin/cursor-rules.js list -h
+          ../cli/bin/cursor-rules.js list | grep "Found 4 rules:" || { echo "Not found"; exit 1;}
+          ../cli/bin/cursor-rules.js list | grep -c "Found 1 rule in" | grep 4 || { echo "Not found"; exit 1;}
+          echo "List action test passed"

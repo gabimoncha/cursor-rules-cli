@@ -1,8 +1,13 @@
 import fs from 'node:fs/promises';
-import path from 'node:path';
+import path, { relative } from 'node:path';
 import { detect } from 'out-of-character';
 import { $ } from 'bun';
 import pc from 'picocolors';
+import {
+  checkFile,
+  runScanRulesAction,
+} from '../cli/src/cli/actions/scanRulesAction';
+import { logger } from '../cli/lib/shared/logger';
 
 export async function copyTemplates() {
   // Create the templates directory
@@ -29,8 +34,19 @@ export async function copyTemplates() {
     await Bun.write(output, input);
   }
 
+  let count = 0;
+
   try {
     await $`wget https://raw.githubusercontent.com/oven-sh/bun/refs/heads/main/src/init/rule.md -O ${templatesDir}/use-bun-instead-of-node-vite-npm-pnpm.md`.quiet();
+
+    const bunRule = path.join(
+      'lib',
+      'templates',
+      'rules-default',
+      'use-bun-instead-of-node-vite-npm-pnpm.md'
+    );
+
+    count += checkFile(bunRule, true);
   } catch (error) {
     console.warn(pc.yellow('Bun rule.md link is probably broken'));
   }
@@ -55,22 +71,23 @@ export async function copyTemplates() {
     'awesome-cursorrules',
     'rules-new'
   );
+
   const rulesNewFiles = await fs.readdir(awesomeRulesNew, { recursive: true });
 
-  let count = 0;
+  const awesomeRules = path.join('..', 'awesome-cursorrules', 'rules-new');
 
   for (const file of rulesNewFiles) {
-    const text = await Bun.file(path.join(awesomeRulesNew, file)).text();
-    const result = detect(text);
+    count += checkFile(path.join(awesomeRules, file), true);
+    const input = Bun.file(path.join(awesomeRulesNew, file));
+    const output = Bun.file(path.join(awesomeTemplatesDir, file));
+    await Bun.write(output, input);
+  }
 
-    if (result?.length > 0) {
-      console.log(`${'Vulnerable'} ${file}`);
-      count++;
-    } else {
-      const input = Bun.file(path.join(awesomeRulesNew, file));
-      const output = Bun.file(path.join(awesomeTemplatesDir, file));
-      await Bun.write(output, input);
-    }
+  const noun = count === 1 ? 'file' : 'files';
+  if (count === 0) {
+    logger.info(pc.green(`\nAll files are safe ✅`));
+  } else {
+    logger.info(pc.green(`\nFixed ${count} ${noun} ✅`));
   }
 }
 

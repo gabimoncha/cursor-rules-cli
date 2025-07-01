@@ -2,10 +2,6 @@ import type { OptionValues } from 'commander';
 import type { SupportedShell } from '@pnpm/tabtab';
 
 export interface CliOptions extends OptionValues {
-  // Basic Options
-  list?: boolean;
-  version?: boolean;
-
   // Rules Options
   force?: boolean;
   repomix?: boolean;
@@ -13,8 +9,8 @@ export interface CliOptions extends OptionValues {
 
   // Scan Options
   path?: string;
+  pattern?: string; // list option too
   filter?: string;
-  pattern?: string;
   sanitize?: boolean;
 
   // Completion Options
@@ -25,6 +21,7 @@ export interface CliOptions extends OptionValues {
   // mcp?: boolean;
 
   // Other Options
+  version?: boolean;
   verbose?: boolean;
   quiet?: boolean;
 }

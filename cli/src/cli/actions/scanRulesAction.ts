@@ -1,10 +1,11 @@
-import { readdirSync, readFileSync, lstatSync, writeFileSync } from 'node:fs';
-import { join, resolve, relative, dirname } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve, relative } from 'node:path';
 import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
 import outOfChar from 'out-of-character';
 import { matchRegex } from '~/audit/matchRegex.js';
 import { regexTemplates } from '~/audit/regex.js';
+import { scanPath } from '~/core/scanPath.js';
 
 export interface ScanOptions {
   path: string;
@@ -13,7 +14,7 @@ export interface ScanOptions {
   sanitize?: boolean;
 }
 
-export const runScanPathAction = ({
+export const runScanRulesAction = ({
   path,
   filter,
   pattern,
@@ -72,13 +73,15 @@ export const runScanPathAction = ({
     logger.info(pc.green(`\nFound ${totalFiles} files total:`));
 
     for (const [directory, dirInfo] of filteredPathMap) {
+      const noun = dirInfo.count === 1 ? 'rule' : 'rules';
+
       logger.log(
-        `  ${pc.dim('•')} Found ${dirInfo.count} files in ${pc.cyan(directory)}`
+        `  ${pc.dim('•')} Found ${dirInfo.count} ${noun} in ${pc.cyan(
+          directory
+        )}`
       );
     }
 
-    // Additional processing could go here
-    // For example, analyzing cursor rules files, linting, etc.
     const pathsToScan = [];
     for (const [directory, dirInfo] of filteredPathMap) {
       for (const file of dirInfo.files) {
@@ -89,15 +92,16 @@ export const runScanPathAction = ({
     let count = 0;
     pathsToScan.forEach((file) => (count += checkFile(file, sanitize)));
 
+    const noun = count === 1 ? 'file' : 'files';
     if (count === 0) {
       logger.info(pc.green(`\nAll files are safe ✅`));
     } else if (sanitize) {
-      logger.info(pc.green(`\nFixed ${count} files ✅`));
+      logger.info(pc.green(`\nFixed ${count} ${noun} ✅`));
     } else {
       logger.info(
-        `\nRun ${pc.yellow('cursor-rules scan --sanitize')} to fix the file${
-          count > 1 ? 's' : ''
-        } ⚠️`
+        `\nRun ${pc.yellow(
+          'cursor-rules scan --sanitize'
+        )} to fix the ${noun} ⚠️`
       );
     }
   } catch (error) {
@@ -110,151 +114,7 @@ export const runScanPathAction = ({
   }
 };
 
-interface DirectoryInfo {
-  count: number;
-  path: string;
-  files: string[];
-}
-
-function scanPath(
-  pathStr: string,
-  pattern: string
-): Map<string, DirectoryInfo> {
-  const pathInfo = new Map<string, DirectoryInfo>();
-
-  try {
-    const isDir = lstatSync(pathStr).isDirectory();
-
-    if (!isDir) {
-      const parentDir = dirname(pathStr);
-      const relativePath = relative(process.cwd(), parentDir) || '.';
-      const filename = pathStr.split('/').pop()!;
-
-      if (!matchFileName(filename, pattern)) {
-        return pathInfo;
-      }
-
-      pathInfo.set(relativePath, {
-        count: 1,
-        path: parentDir,
-        files: [filename],
-      });
-
-      return pathInfo;
-    }
-
-    readdirSync(pathStr)
-      .filter((entry) => excludeDefaultDirs(entry))
-      .forEach((entry) => {
-        const fullPath = join(pathStr, entry);
-        const stats = lstatSync(fullPath);
-
-        if (stats.isDirectory()) {
-          // Recursively scan subdirectory and merge results
-          const subpathInfo = scanPath(fullPath, pattern);
-          for (const [subdir, subdirInfo] of subpathInfo) {
-            if (pathInfo.has(subdir)) {
-              // Merge with existing directory info
-              const existing = pathInfo.get(subdir)!;
-              existing.count += subdirInfo.count;
-              existing.files.push(...subdirInfo.files);
-            } else {
-              // Add new directory info
-              pathInfo.set(subdir, {
-                count: subdirInfo.count,
-                path: subdirInfo.path,
-                files: [...subdirInfo.files],
-              });
-            }
-          }
-        } else if (stats.isFile() && matchFileName(entry, pattern)) {
-          // Check if file matches include/exclude patterns
-          const parentDir = dirname(fullPath);
-          const relativeParentDir = relative(process.cwd(), parentDir);
-          const displayDir = relativeParentDir || '.';
-
-          if (pathInfo.has(displayDir)) {
-            // Update existing directory info
-            const existing = pathInfo.get(displayDir)!;
-            existing.count++;
-            existing.files.push(entry);
-          } else {
-            // Create new directory info
-            pathInfo.set(displayDir, {
-              count: 1,
-              path: parentDir,
-              files: [entry],
-            });
-          }
-        }
-      });
-  } catch (error) {
-    logger.warn(`Could not read directory: ${pathStr}`);
-  }
-
-  return pathInfo;
-}
-
-const excludedDirs = ['node_modules', '__pycache__'];
-const excludedDotDirs = [
-  '.git',
-  '.github',
-  '.vscode',
-  '.egg-info',
-  '.venv',
-  '.next',
-  '.nuxt',
-  '.cache',
-  '.sass-cache',
-  '.gradle',
-  '.DS_Store',
-  '.ipynb_checkpoints',
-  '.pytest_cache',
-  '.mypy_cache',
-  '.tox',
-  '.hg',
-  '.svn',
-  '.bzr',
-  '.lock-wscript',
-  '.Python',
-  '.jupyter',
-  '.history',
-  '.yarn',
-  '.yarn-cache',
-  '.eslintcache',
-  '.parcel-cache',
-  '.cache-loader',
-  '.nyc_output',
-  '.node_repl_history',
-  '.pnp$',
-];
-const defaultExcludePattern =
-  excludedDirs.join('$|^') + '$|^\\' + excludedDotDirs.join('$|^\\');
-
-function excludeDefaultDirs(filename: string) {
-  const excludeRegex = new RegExp(defaultExcludePattern);
-  const matchesExclude = excludeRegex.test(filename);
-
-  return !matchesExclude;
-}
-
-function matchFileName(filename: string, pattern: string) {
-  try {
-    // Use RegExp constructor for user-provided patterns
-    const patternRegex = new RegExp(pattern, 'gv');
-    return patternRegex.test(filename);
-  } catch (error) {
-    logger.warn(
-      `Invalid regex pattern: ${pattern}. Error: ${
-        error instanceof Error ? error.message : 'Unknown error'
-      }`
-    );
-    // Fall back to only cursor rules regex if pattern is invalid
-    return false;
-  }
-}
-
-function checkFile(file: string, sanitize?: boolean) {
+export function checkFile(file: string, sanitize?: boolean) {
   try {
     const filePath = join(process.cwd(), file);
     const content = readFileSync(filePath).toString();

@@ -20,16 +20,11 @@
     "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepack",
     "release": "bun publish --cwd cli --otp",
     "check": "bun run ./scripts/check-awesome-cursorrules.ts",
-    "rules": "bun run --node cursor-rules",
-    "test:commander": "bun test cli/src",
-    "test:rules": "bun -cwd example rules",
-    "test:repomix": "bun -cwd example repomix",
-    "test:yolo": "bun -cwd example yolo"
+    "test:commander": "bun test cli/src"
   },
   "devDependencies": {
     "@types/bun": "^1.2.17",
     "@types/node": "^22.14.0",
-    "repomix": "^0.3.9",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   },

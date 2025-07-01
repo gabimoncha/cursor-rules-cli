@@ -10,7 +10,7 @@ import type { CliOptions } from './types.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 import { checkForUpdates } from '~/core/checkForUpdates.js';
-import { runScanPathAction } from './actions/scanPathAction.js';
+import { runScanRulesAction } from './actions/scanRulesAction.js';
 import { commanderTabtab } from '~/core/commander-tabtab.js';
 import {
   runInstallCompletionAction,
@@ -100,7 +100,13 @@ export const setupProgram = (programInstance: Command = program) => {
 
   programInstance
     .command('list')
-    .description('list all rules')
+    .description(
+      'list all rules in the current directory (.cursorrules or .mdc files)'
+    )
+    .option(
+      '-P, --pattern <pattern>',
+      'regex pattern to apply to the scanned files (default: "\\.cursorrules|.*\\.mdc")'
+    )
     .action(commanderActionEndpoint);
 
   programInstance
@@ -204,7 +210,7 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
 
   // List command
   if (cmd === 'list') {
-    await runListRulesAction();
+    await runListRulesAction(options.pattern ?? '\\.cursorrules|.*\\.mdc');
     return;
   }
 
@@ -221,7 +227,7 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
       return;
     }
 
-    runScanPathAction({
+    runScanRulesAction({
       path: options.path,
       filter: options.filter,
       pattern: options.pattern ?? '\\.cursorrules|.*\\.mdc',
