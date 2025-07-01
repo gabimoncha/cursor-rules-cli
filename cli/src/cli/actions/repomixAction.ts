@@ -1,4 +1,3 @@
-import { spawn, fork } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import pc from 'picocolors';
