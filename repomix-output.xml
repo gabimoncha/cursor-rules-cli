@@ -220,9 +220,6 @@ jobs:
 <file path="cli/bin/cursor-rules.js">
 const [major] = nodeVersion.split('.').map(Number);
 ⋮----
-console.log(process.versions.node)
-console.log(process.versions.bun)
-⋮----
 console.error(`Cursor Rules requires Node.js version 20 or higher. Current version: ${nodeVersion}\n`);
 process.exit(EXIT_CODES.ERROR);
 ⋮----
@@ -394,7 +391,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, relative } from 'node:path';
 import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
-import outOfChar from 'out-of-character';
 import { matchRegex } from '~/audit/matchRegex.js';
 import { regexTemplates } from '~/audit/regex.js';
 import { scanPath } from '~/core/scanPath.js';
@@ -964,7 +960,7 @@ Should become:
 {
 	"name": "@gabimoncha/cursor-rules",
 	"description": "A CLI for bootstrapping Cursor rules to a project",
-	"version": "0.1.9",
+	"version": "0.2.0",
 	"type": "module",
 	"main": "./lib/index.js",
 	"types": "./lib/index.d.ts",
@@ -1019,7 +1015,6 @@ Should become:
 		"@pnpm/tabtab": "^0.5.4",
 		"commander": "^14.0.0",
 		"minimist": "^1.2.8",
-		"out-of-character": "^2.0.1",
 		"package-manager-detector": "^1.3.0",
 		"picocolors": "^1.0.1",
 		"regex": "^6.0.1",
@@ -1523,14 +1518,10 @@ export async function checkForVulnerability()
 
 <file path="scripts/copy-markdown.ts">
 import fs from 'node:fs/promises';
-import path, { relative } from 'node:path';
-import { detect } from 'out-of-character';
+import path from 'node:path';
 import { $ } from 'bun';
 import pc from 'picocolors';
-import {
-  checkFile,
-  runScanRulesAction,
-} from '../cli/src/cli/actions/scanRulesAction';
+import { checkFile } from '../cli/src/cli/actions/scanRulesAction';
 import { logger } from '../cli/lib/shared/logger';
 export async function copyTemplates()
 ⋮----
@@ -1747,9 +1738,6 @@ SOFTWARE.
     "@types/node": "^22.14.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "out-of-character": "^1.2.4"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

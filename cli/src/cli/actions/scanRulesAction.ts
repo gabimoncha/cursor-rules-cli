@@ -2,7 +2,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, relative } from 'node:path';
 import { logger } from '~/shared/logger.js';
 import pc from 'picocolors';
-import outOfChar from 'out-of-character';
 import { matchRegex } from '~/audit/matchRegex.js';
 import { regexTemplates } from '~/audit/regex.js';
 import { scanPath } from '~/core/scanPath.js';
@@ -122,9 +121,7 @@ export function checkFile(file: string, sanitize?: boolean) {
     const matchedRegex = matchRegex(content);
     const matched = Object.entries(matchedRegex);
 
-    const outOfCharResult = outOfChar.detect(content);
-
-    const isVulnerable = outOfCharResult?.length > 0 || matched.length > 0;
+    const isVulnerable = matched.length > 0;
     if (!isVulnerable) return 0;
 
     logger.prompt.message(
@@ -141,27 +138,6 @@ export function checkFile(file: string, sanitize?: boolean) {
       });
     }
 
-    if (outOfCharResult && outOfCharResult.length > 0) {
-      const noun = outOfCharResult.length > 1 ? 'characters' : 'character';
-      logger.prompt.message(pc.blue(`Hidden ${noun}:`));
-      const hiddenChars = outOfCharResult.reduce(
-        (acc: { [key: string]: number }, obj: any) => {
-          if (acc[obj.name]) {
-            acc[obj.name]++;
-          } else {
-            acc[obj.name] = 1;
-          }
-          return acc;
-        },
-        {}
-      );
-      Object.entries(hiddenChars).forEach(([name, count]) => {
-        const noun = count > 1 ? 'chars' : 'char';
-        logger.prompt.message(
-          pc.dim(`${pc.red('•')} '${name}': ${count} ${noun}`)
-        );
-      });
-    }
     if (!sanitize) return 1;
 
     let fixedContent = content;
@@ -172,10 +148,6 @@ export function checkFile(file: string, sanitize?: boolean) {
           ''
         );
       });
-    }
-
-    if (outOfCharResult?.length > 0) {
-      fixedContent = outOfChar.replace(fixedContent);
     }
 
     writeFileSync(filePath, fixedContent);

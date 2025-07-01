@@ -1,12 +1,8 @@
 import fs from 'node:fs/promises';
-import path, { relative } from 'node:path';
-import { detect } from 'out-of-character';
+import path from 'node:path';
 import { $ } from 'bun';
 import pc from 'picocolors';
-import {
-  checkFile,
-  runScanRulesAction,
-} from '../cli/src/cli/actions/scanRulesAction';
+import { checkFile } from '../cli/src/cli/actions/scanRulesAction';
 import { logger } from '../cli/lib/shared/logger';
 
 export async function copyTemplates() {
