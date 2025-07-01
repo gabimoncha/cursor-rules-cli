@@ -1,85 +1,93 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { detect } from "out-of-character";
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { $ } from 'bun';
+import pc from 'picocolors';
+import { checkFile } from '../cli/src/cli/actions/scanRulesAction';
+import { logger } from '../cli/lib/shared/logger';
 
 export async function copyTemplates() {
-	// Create the templates directory
-	const templatesDir = path.join(
-		process.cwd(),
-		"lib",
-		"templates",
-		"rules-default",
-	);
-	await fs.mkdir(templatesDir, { recursive: true });
+  // Create the templates directory
+  const templatesDir = path.join(process.cwd(), 'lib', 'templates', 'rules-default');
+  await fs.mkdir(templatesDir, { recursive: true });
 
-	// Copy default rules
-	const rulesDefault = path.join(
-		process.cwd(),
-		"src",
-		"templates",
-		"rules-default",
-	);
-	const rulesDefaultFiles = await fs.readdir(rulesDefault, { recursive: true });
+  // Copy default rules
+  const rulesDefault = path.join(process.cwd(), 'src', 'templates', 'rules-default');
+  const rulesDefaultFiles = await fs.readdir(rulesDefault, { recursive: true });
 
-	for (const file of rulesDefaultFiles) {
-		await fs.copyFile(
-			path.join(rulesDefault, file),
-			path.join(templatesDir, file),
-		);
-	}
+  for (const file of rulesDefaultFiles) {
+    const input = Bun.file(path.join(rulesDefault, file));
+    const output = Bun.file(path.join(templatesDir, file));
+    await Bun.write(output, input);
+  }
 
-	// Copy the awesome cursor rules after checking for vulnerabilities
-	const awesomeRulesNew = path.join(
-		process.cwd(),
-		"..",
-		"awesome-cursorrules",
-		"rules-new",
-	);
-	const rulesNewFiles = await fs.readdir(awesomeRulesNew, { recursive: true });
+  let count = 0;
 
-	let count = 0;
+  try {
+    await $`wget https://raw.githubusercontent.com/oven-sh/bun/refs/heads/main/src/init/rule.md -O ${templatesDir}/use-bun-instead-of-node-vite-npm-pnpm.md`.quiet();
 
-	for (const file of rulesNewFiles) {
-		const text = await Bun.file(path.join(awesomeRulesNew, file)).text();
-		const result = detect(text);
+    const bunRule = path.join(
+      'lib',
+      'templates',
+      'rules-default',
+      'use-bun-instead-of-node-vite-npm-pnpm.md'
+    );
 
-		if (result?.length > 0) {
-			console.log(`${"Vulnerable"} ${file}`);
-			count++;
-		} else {
-			await fs.copyFile(
-				path.join(awesomeRulesNew, file),
-				path.join(templatesDir, file),
-			);
-		}
-	}
+    count += checkFile(bunRule, true);
+  } catch (error) {
+    console.warn(pc.yellow('Bun rule.md link is probably broken'));
+  }
+
+  // Copy the awesome cursor rules after checking for vulnerabilities
+  if (process.env.CI) {
+    console.log('Skipping awesome cursor rules copy in CI');
+    return;
+  }
+
+  const awesomeTemplatesDir = path.join(process.cwd(), 'lib', 'templates', 'awesome-cursorrules');
+  await fs.mkdir(awesomeTemplatesDir, { recursive: true });
+
+  const awesomeRulesNew = path.join(process.cwd(), '..', 'awesome-cursorrules', 'rules-new');
+
+  const rulesNewFiles = await fs.readdir(awesomeRulesNew, { recursive: true });
+
+  const awesomeRules = path.join('..', 'awesome-cursorrules', 'rules-new');
+
+  for (const file of rulesNewFiles) {
+    count += checkFile(path.join(awesomeRules, file), true);
+    const input = Bun.file(path.join(awesomeRulesNew, file));
+    const output = Bun.file(path.join(awesomeTemplatesDir, file));
+    await Bun.write(output, input);
+  }
+
+  const noun = count === 1 ? 'file' : 'files';
+  if (count === 0) {
+    logger.info(pc.green('\nAll files are safe ✅'));
+  } else {
+    logger.info(pc.green(`\nFixed ${count} ${noun} ✅`));
+  }
 }
 
 export async function copyRepomixInstructions() {
-	// Create the templates directory
-	const repomixInstructionsDir = path.join(
-		process.cwd(),
-		"lib",
-		"templates",
-		"repomix-instructions",
-	);
-	await fs.mkdir(repomixInstructionsDir, { recursive: true });
+  // Create the templates directory
+  const repomixInstructionsDir = path.join(
+    process.cwd(),
+    'lib',
+    'templates',
+    'repomix-instructions'
+  );
+  await fs.mkdir(repomixInstructionsDir, { recursive: true });
 
-	// Copy repomix instructions
-	const repomixInstructions = path.join(
-		process.cwd(),
-		"src",
-		"templates",
-		"repomix-instructions",
-	);
+  // Copy repomix instructions
+  const repomixInstructions = path.join(process.cwd(), 'src', 'templates', 'repomix-instructions');
 
-	await fs.copyFile(
-		path.join(repomixInstructions, "instruction-project-structure.md"),
-		path.join(repomixInstructionsDir, "instruction-project-structure.md"),
-	);
+  const file = 'instruction-project-structure.md';
+
+  const input = Bun.file(path.join(repomixInstructions, file));
+  const output = Bun.file(path.join(repomixInstructionsDir, file));
+  await Bun.write(output, input);
 }
 
 (async () => {
-	await copyTemplates();
-	await copyRepomixInstructions();
+  await copyTemplates();
+  await copyRepomixInstructions();
 })();

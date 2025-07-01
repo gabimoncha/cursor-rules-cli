@@ -5,171 +5,98 @@ alwaysApply: false
 ---
 # Cursor Rules CLI
 
-A CLI tool to add and manage Cursor rules in your projects. This tool helps developers integrate AI-assisted guidance into their codebases through the Cursor IDE.
+A command-line tool for bootstrapping and maintaining **Cursor IDE** rule files in any project, offering interactive setup, auditing, and repository summarisation via Repomix.
 
 ## Purpose
 
-The Cursor Rules CLI facilitates the creation, installation, and management of Cursor rules - markdown files with structured metadata that provide AI with instructions on how to interact with your codebase. These rules enhance AI's understanding of your project structure, coding conventions, and task management approach.
+Provide developers with an easy-to-use CLI that:
+1. Installs default and community **Cursor rules** into the current repository.
+2. Generates a compact XML snapshot of the codebase using **Repomix** so AI assistants get rich context.
+3. Audits and sanitises existing rule files for potential security issues.
+4. Offers quality-of-life features such as shell-completion, version checks, and update notifications.
 
 ## Key features
 
-- **Rule Installation**: Easily add Cursor rules to any project
-- **Template Rules**: Includes default rule templates for common use cases
-- **Interactive Setup**: Guided setup process using command-line prompts
-- **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
-- **Project Structure**: Creates standardized rule organization within projects
+- 🚀 **Interactive init** – guided prompts to install rule templates and (optionally) run Repomix.
+- 🧩 **Template library** – ships with default rules plus [awesome-cursorrules] templates.
+- 🔍 **Audit & Scan** – detect and optionally fix vulnerable or malformed rule files.
+- 🪄 **Repomix integration** – create `repomix-output.xml` & `repomix.config.json` with sensible defaults.
+- 🖥 **Shell completion** – install/uninstall tab-completion for supported shells.
+- 📦 **Workspaces ready** – published as a Bun package, compiled to ESM JavaScript.
 
 ## Directory structure
 
 ```tree
 .
-├── cli/                          # Main CLI implementation package
-│   ├── bin/                        # CLI executable scripts
-│   ├── src/                        # Source code
-│   │   ├── cli/                      # CLI implementation components
-│   │   │   ├── actions/                # Command action handlers
-│   │   │   ├── cliRun.ts               # CLI runner functionality
-│   │   │   ├── types.ts                # CLI type definitions
-│   │   ├── core/                     # Core business logic
-│   │   │   ├── checkForUpdates.ts      # Version checking functionality
-│   │   │   ├── installRules.ts         # Rule installation functionality
-│   │   │   ├── packageJsonParse.ts     # Package.json parsing utilities
-│   │   ├── shared/                   # Shared utilities and constants
-│   │   │   ├── constants.ts            # Global constants
-│   │   │   ├── errorHandle.ts          # Error handling utilities
-│   │   │   ├── logger.ts               # Logging functionality
-│   │   ├── templates/                # Rule templates
-│   │   │   ├── rules-default/          # Default rule templates
-│   │   │       ├── cursor-rules.md       # Rules for cursor rules creation
-│   │   │       ├── project-structure.md  # Project structure guidelines
-│   │   │       ├── task-list.md          # Task management guidelines
-│   │   ├── index.ts                  # Main entry point
-│   ├── package.json                # CLI package configuration
-│   ├── tsconfig.json                # TypeScript configuration
-│   ├── tsconfig.build.json          # Build-specific TypeScript config
-│   ├── README.md                   # CLI-specific documentation
-├── docs/                         # Documentation
-│   ├── CLI_COMMANDS.md             # CLI command reference
-│   ├── CONTRIBUTING.md             # Contribution guidelines
-│   ├── CURSOR_RULES_GUIDE.md       # Comprehensive guide to cursor rules
-├── example/                      # Example project for testing
-│   ├── parent_folder/              # Example nested directory structure
-│   │   ├── child_folder/             # Child directory example
-│   │   ├── other_child_folder/       # Another child directory example
-│   ├── single_folder/              # Simple folder example
-│   ├── index.ts                    # Example entry point
-│   ├── package.json                # Example package configuration
-├── .gitignore                    # Git ignore file
-├── .tool-versions                # Tool versions for asdf version manager
-├── FUTURE_ENHANCEMENTS.md        # Planned improvements documentation
-├── LICENSE                       # MIT License file
-├── package.json                  # Root package configuration
-├── README.md                     # Main project documentation
+├── .github/                 # GitHub configuration and CI workflows
+│   └── workflows/           # Continuous-integration definitions (tests, release)
+├── awesome-cursorrules/     # Git submodule with a catalogue of community rule templates
+├── cli/                     # Source for the published `@gabimoncha/cursor-rules` package
+│   ├── bin/                 # Executable entry file distributed on npm
+│   ├── src/                 # TypeScript source code
+│   │   ├── audit/           # Regex & Unicode spoofing detection helpers
+│   │   ├── cli/             # Command implementations (init, list, repomix, scan, …)
+│   │   ├── core/            # Business-logic utilities shared across commands
+│   │   ├── shared/          # Logger, constants, error handling, etc.
+│   │   └── templates/       # Built-in rule templates copied during `init`
+│   ├── package.json         # Manifest for the CLI workspace
+│   └── README.md            # Package-level documentation
+├── docs/                    # Detailed markdown documentation (guide, commands, contributing)
+├── example/                 # Lightweight sample project used in tests & demos
+│   ├── parent_folder/       # Nested example showcasing recursive scanning
+│   └── single_folder/       # Alternative flat example structure
+├── scripts/                 # Development helper scripts (template copy, vulnerability check)
+├── .tool-versions           # Toolchain versions (e.g., Yarn)
+├── FUTURE_ENHANCEMENTS.md   # Roadmap and upcoming improvements
+├── LICENSE                  # MIT license
+├── package.json             # Root workspace manifest (Yarn workspaces & scripts)
+└── README.md                # High-level project overview and usage instructions
 ```
 
 ## Architecture
 
-The project follows a modular architecture:
+The CLI is published as an **ESM Bun package** and organised as a workspace inside a monorepo:
 
-1. **CLI Interface Layer**: 
-   - Uses Commander.js for command parsing
-   - Implements interactive prompts with @clack/prompts
-   - Handles user input and command routing
-
-2. **Core Logic Layer**:
-   - Rule installation and management
-   - Package information parsing
-   - Configuration validation
-   - Version checking and updates
-
-3. **Template Management**:
-   - Default rule templates
-   - Template customization
-
-4. **Repomix Integration**:
-   - Repository analysis
-   - XML output generation for AI consumption
-
-## Default Templates
-
-The CLI provides the following default templates:
-- **cursor-rules.md**: Guidelines for adding and organizing AI rules
-- **project-structure.md**: Overview of the project and organization
-- **task-list.md**: Guidelines for tracking project progress with task lists
+1. **Commander.js** powers the command parser (`cli/src/cli/cliRun.ts`).
+2. Each command is implemented as an async function under `cli/src/cli/actions/*` and re-exports utilities from `core` and `shared`.
+3. Business logic (rule installation, update checks, etc.) lives in `cli/src/core/*`.
+4. **Repomix** is invoked programmatically to generate a compressed view of the repository.
+5. Build pipeline compiles TypeScript → ESM JS via `tsc`, aliases paths, and copies markdown templates.
+6. Automation (CI runs on Bun inside GitHub Actions) ensures tests & smoke checks pass for every push.
 
 ## Usage
 
-### Installation
-
-**Global Install:**
 ```bash
-# Using bun
+# Install globally with Bun
 bun add -g @gabimoncha/cursor-rules
 
-# Using yarn
-yarn global add @gabimoncha/cursor-rules
-
-# Using npm
-npm install -g @gabimoncha/cursor-rules
-```
-
-**Project Install:**
-```bash
-# Using bun
-bun add -d @gabimoncha/cursor-rules
-
-# Using yarn
-yarn add -D @gabimoncha/cursor-rules
-
-# Using npm
-npm install --save-dev @gabimoncha/cursor-rules
-```
-
-### Commands
-
-```bash
-# Initialize cursor rules in your project
+# Initialise rules in the current project
 cursor-rules init
 
-# Generate repomix file for AI analysis
+# Generate Repomix snapshot only
 cursor-rules repomix
 
-# List existing rules in the project
+# List installed rules
 cursor-rules list
-
-# Display version information
-cursor-rules --version
-```
-
-### Options
-
-```bash
-# Initialize cursor rules with default templates, overwriting rules and generating repomix-output.xml and repomix.config.file
-cursor-rules init --force
-
-# Initialize cursor rules, autoselect default repomix options generating repomix-output.xml and repomix.config.file
-cursor-rules init --repomix
-
-# Initialize cursor rules, overwrites selected rules
-cursor-rules init --overwrite
 ```
 
 ## Technical implementation
 
-The project is built with:
-- **TypeScript**: For type-safe code
-- **Commander.js**: For CLI command parsing
-- **@clack/prompts**: For interactive command-line prompts
-- **Repomix**: For repository analysis and overview generation
-- **Zod**: For runtime type validation
-- **Bun/Node.js**: For JavaScript runtime support
-- **Package-manager-detector**: For detecting package managers
+- **TypeScript 5** for type-safe source.
+- **Bun** as runtime, package manager & test runner.
+- **Commander.js** for CLI ergonomics.
+- **@clack/prompts** for interactive terminal UX.
+- **Repomix** for repository summarisation.
+- **Picocolors** for colourful output.
 
 ## Future Enhancements
 
-- Add rule validation and linting
-- Enhanced rule templates for different project types
-- Implement more specialized rule templates for different project types
-- Integration with more code analysis tools
-- Custom rule generation based on project analysis
-- UI for rule management
+See `FUTURE_ENHANCEMENTS.md` for the full roadmap, including:
+- Rule validation & linting
+- Additional specialised rule templates (React, Python, Go, …)
+- Web UI for rule management
+- Deeper integration with code-analysis tools
+
+---
+
+*After saving this file you might need to refresh the Explorer sidebar or restart Cursor to see it in the tree.*

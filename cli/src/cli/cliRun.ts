@@ -10,6 +10,13 @@ import type { CliOptions } from './types.js';
 import { runRepomixAction } from '~/cli/actions/repomixAction.js';
 import { runListRulesAction } from '~/cli/actions/listRulesAction.js';
 import { checkForUpdates } from '~/core/checkForUpdates.js';
+import { runScanRulesAction } from './actions/scanRulesAction.js';
+import { commanderTabtab } from '~/core/commander-tabtab.js';
+import {
+  runInstallCompletionAction,
+  runUninstallCompletionAction,
+} from '~/cli/actions/completionActions.js';
+import { existsSync } from 'node:fs';
 
 // Semantic mapping for CLI suggestions
 // This maps conceptually related terms (not typos) to valid options
@@ -26,29 +33,27 @@ const semanticSuggestionMap: Record<string, string[]> = {
   mute: ['--quiet'],
 };
 
-class RootCommand extends Command {
+export class RootProgram extends Command {
   createCommand(name: string) {
     const cmd = new Command(name);
     cmd.description('Cursor Rules - Add awesome IDE rules to your codebase');
     // Basic Options
-    cmd.addOption(new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet'));
+    cmd.addOption(
+      new Option('--verbose', 'enable verbose logging for detailed output').conflicts('quiet')
+    );
     cmd.addOption(new Option('-q, --quiet', 'disable all output to stdout').conflicts('verbose'));
     return cmd;
   }
 }
 
-export const program = new RootCommand();
+export const program = new RootProgram('cursor-rules');
 
-export const run = async () => {
-  try {
-    // Check for updates in the background
-    const updateMessage = checkForUpdates();
-
-    program
+export const setupProgram = (programInstance: Command = program) => {
+  programInstance
     .option('-v, --version', 'show version information')
     .action(commanderActionEndpoint);
 
-    program
+  programInstance
     .command('init')
     .description('start the setup process')
     // Rules Options
@@ -57,20 +62,64 @@ export const run = async () => {
     .option('-o, --overwrite', 'overwrite existing rules')
     .action(commanderActionEndpoint);
 
-    program
-    .command('list')
-    .description('list all rules')
-    .action(commanderActionEndpoint);
-
-    program
+  programInstance
     .command('repomix')
     .description('generate repomix output with recommended settings')
     .action(commanderActionEndpoint);
 
-    // program
-    // .command('mcp')
-    // .description('run as a MCP server')
-    // .action(runCli);
+  programInstance
+    .command('scan')
+    .description('scan and check all files in the specified path')
+    .option('-p, --path <path>', 'path to scan', '.')
+    .option(
+      '-f, --filter <filter>',
+      'filter to allow only directories and files that contain the string (similar to node test)'
+    )
+    .option(
+      '-P, --pattern <pattern>',
+      'regex pattern to apply to the scanned files (default: "\\.cursorrules|.*\\.mdc")'
+    )
+    .option('-s, --sanitize', '(recommended) sanitize the files that are vulnerable')
+    .action(commanderActionEndpoint);
+
+  programInstance
+    .command('list')
+    .description('list all rules in the current directory (.cursorrules or .mdc files)')
+    .option(
+      '-P, --pattern <pattern>',
+      'regex pattern to apply to the scanned files (default: "\\.cursorrules|.*\\.mdc")'
+    )
+    .action(commanderActionEndpoint);
+
+  programInstance
+    .command('completion')
+    .addOption(new Option('-i, --install', 'install tab autocompletion').conflicts('uninstall'))
+    .addOption(new Option('-u, --uninstall', 'uninstall tab autocompletion').conflicts('install'))
+    .description('setup shell completion')
+    .action(async (options) => {
+      if (options.uninstall) {
+        await runUninstallCompletionAction();
+      } else {
+        await runInstallCompletionAction();
+      }
+    });
+
+  return programInstance;
+};
+
+export const run = async () => {
+  try {
+    // Check for updates in the background
+    const updateMessage = checkForUpdates();
+
+    // Setup the program with all commands and options
+    setupProgram();
+
+    // Handle completion commands before commander parses arguments
+    const completion = await commanderTabtab(program, 'cursor-rules');
+    if (completion) {
+      return;
+    }
 
     // Custom error handling function
     const configOutput = program.configureOutput();
@@ -102,14 +151,14 @@ export const run = async () => {
     });
 
     await program.parseAsync(process.argv);
-    
+
     logger.force(await updateMessage);
   } catch (error) {
     handleError(error);
   }
 };
 
-const commanderActionEndpoint = async (options: CliOptions = {}, command: Command) => {
+const commanderActionEndpoint = async (options: CliOptions, command: Command) => {
   if (options.quiet) {
     logger.setLogLevel(cursorRulesLogLevels.SILENT);
   } else if (options.verbose) {
@@ -121,7 +170,7 @@ const commanderActionEndpoint = async (options: CliOptions = {}, command: Comman
   await runCli(options, command);
 };
 
-export const runCli = async (options: CliOptions = {}, command: Command) => {
+export const runCli = async (options: CliOptions, command: Command) => {
   if (options.version) {
     await runVersionAction();
     return;
@@ -130,14 +179,34 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
   const cmd = command.name();
 
   // List command
-
   if (cmd === 'list') {
-    await runListRulesAction();
+    await runListRulesAction(options.pattern ?? '\\.cursorrules|.*\\.mdc');
+    return;
+  }
+
+  // Scan command
+  if (cmd === 'scan') {
+    if (!options.path) {
+      logger.warn('Defaulting to current directory');
+      options.path = '.';
+    }
+
+    if (!existsSync(options.path)) {
+      logger.error(`Path ${pc.yellow(options.path)} does not exist`);
+      command.outputHelp();
+      return;
+    }
+
+    runScanRulesAction({
+      path: options.path,
+      filter: options.filter,
+      pattern: options.pattern ?? '\\.cursorrules|.*\\.mdc',
+      sanitize: options.sanitize,
+    });
     return;
   }
 
   // Init command
-
   if (options.force) {
     await runInitForceAction(options);
     return;
@@ -153,12 +222,9 @@ export const runCli = async (options: CliOptions = {}, command: Command) => {
     return;
   }
 
-  // MCP command (not implemented yet)
-  
-  // if (options.mcp) {
-  //   return await runMcpAction();
-  // }
-
-  logger.log(pc.bold(pc.green('\n Cursor Rules')), 'a CLI for adding awesome IDE rules to your codebase\n');
+  logger.log(
+    pc.bold(pc.green('\n Cursor Rules')),
+    'a CLI for adding awesome IDE rules to your codebase\n'
+  );
   command.outputHelp();
 };

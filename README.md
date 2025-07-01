@@ -21,56 +21,58 @@ Cursor rules are markdown files with structured metadata that provide AI with in
 - 🚀 **Rule Installation**: Easily add Cursor rules to any project
 - 📋 **Template Rules**: Includes default rule templates for common use cases
 - 💬 **Interactive Setup**: Guided setup process using command-line prompts
-- 📊 **Repomix Integration**: Generate repository overviews using Repomix for AI analysis
+- 🔍 **Security Scan**: Detect and fix vulnerable rule files with `scan` command
+- ⌨️ **Shell Autocompletion**: One-command tab-completion powered by `tabtab`
+- 📊 **Repomix Integration**: Packs repository in a single file for AI analysis
 - 📁 **Project Structure**: Creates standardized rule organization
 
 ## Installation
 
 ```bash
 # Global install
-
-# bun
 bun add -g @gabimoncha/cursor-rules
 
-# yarn
-yarn global add @gabimoncha/cursor-rules
-
-# npm
-npm install -g @gabimoncha/cursor-rules
-
 # Project install
-
-# bun
 bun add -d @gabimoncha/cursor-rules
 
-# yarn
-yarn add -D @gabimoncha/cursor-rules
-
-# npm
-npm install --save-dev @gabimoncha/cursor-rules
+# (works with npm, pnpm & yarn too)
 ```
 
 ## Usage
 
 ```bash
-# Initialize cursor rules
-cursor-rules init
+cursor-rules -v # show version
+cursor-rules -h # show help
 
-# Generate repomix file
+# start the setup process
+cursor-rules init [options]
+
+Options:
+  -f, --force      # overwrites already existing rules if filenames match
+  -r, --repomix    # packs entire repository in a single file for AI analysis
+  -o, --overwrite  # overwrite existing rules
+
+# packs entire repository in a single file for AI analysis
 cursor-rules repomix
 
-# Initialize and generate repomix
-cursor-rules init -r
+# scan and check all files in the specified path
+cursor-rules scan [options]
 
-# Force overwrite existing rules
-cursor-rules init -f
+Options:
+  -p, --path <path>        # path to scan (default: ".")
+  -f, --filter <filter>    # filter allowing only directories and files that contain the string (similar to node test)
+  -P, --pattern <pattern>  # regex pattern to apply to the scanned files (default: "\.cursorrules|.*\.mdc")
+  -s, --sanitize           # (recommended) sanitize the files that are vulnerable
 
-# List existing rules
+# list all rules
 cursor-rules list
 
-# Display version or help
-cursor-rules --version
-cursor-rules --help
+# setup shell completion
+cursor-rules completion --install
+
+Options:
+  -i, --install    # install tab autocompletion
+  -u, --uninstall  # uninstall tab autocompletion
 ```
 
 ## Default Rule Templates
@@ -80,6 +82,11 @@ The CLI provides three default templates:
 - **cursor-rules.md**: Guidelines for adding and organizing AI rules
 - **task-list.md**: Framework for tracking project progress with task lists
 - **project-structure.md**: Template for documenting project structure
+- **use-bun-instead-of-node.md**: Use Bun instead of Node.js, npm, pnpm, or vite
+
+## Awesome Rules Templates
+
+The CLI also provides rules from [awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules/tree/7e4db830d65c8951463863dd25cc39b038d34e02/rules-new) repository
 
 ## How Cursor Rules Work
 

@@ -1,29 +1,29 @@
 {
-	"name": "cursor-rules-cli",
-	"private": true,
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
-	},
-	"bugs": {
-		"url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
-	},
-	"author": "gabimoncha <gabimoncha@gmail.com>",
-	"homepage": "https://github.com/gabimoncha/cursor-rules-cli",
-	"license": "MIT",
-	"workspaces": ["cli", "example"],
-	"scripts": {
-		"repomix": "repomix --config repomix.config.json",
-		"prepublishOnly": "bun --cwd cli prepare && bun --cwd example clean",
-		"release": "bun publish --cwd cli --otp",
-		"rules": "bun run --bun cursor-rules"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.2.8",
-		"@types/node": "^22.14.0",
-		"repomix": "^0.3.1",
-		"rimraf": "^6.0.1",
-		"typescript": "^5.8.3"
-	},
-	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "name": "cursor-rules-cli",
+  "author": "gabimoncha <gabimoncha@gmail.com>",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+  },
+  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+  "license": "MIT",
+  "workspaces": ["cli", "example"],
+  "scripts": {
+    "repomix": "repomix --config repomix.config.json",
+    "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepack",
+    "release": "bun publish --cwd cli --otp",
+    "check": "bun run ./scripts/check-awesome-cursorrules.ts",
+    "test:commander": "bun test cli/src"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.17",
+    "@types/node": "^22.14.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

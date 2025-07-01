@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import * as url from 'node:url';
 import { logger } from '~/shared/logger.js';
-import { detect } from 'package-manager-detector/detect'
+import { detect } from 'package-manager-detector/detect';
 import { resolveCommand } from 'package-manager-detector/commands';
 
 export const getVersion = async (): Promise<string> => {
@@ -40,20 +40,21 @@ export const getPackageName = async (): Promise<string> => {
 export const getPackageManager = async (commandType: 'global' | 'upgrade') => {
   try {
     const pm = await detect({
-      strategies: ['install-metadata', 'lockfile']
-    })
+      strategies: ['install-metadata', 'lockfile'],
+    });
     if (!pm) {
-      logger.debug('Could not detect package manager')
-      throw new Error('Could not detect package manager')
+      logger.debug('Could not detect package manager');
+      throw new Error('Could not detect package manager');
     }
 
-    const version = commandType === 'global' ? '@latest' : ''
+    const version = commandType === 'global' ? '@latest' : '';
 
-    const { command, args } = resolveCommand(pm.agent, commandType, [`@gabimoncha/cursor-rules${version}`]) || {}
-    return `${command} ${args?.join(' ') || ''}`
+    const { command, args } =
+      resolveCommand(pm.agent, commandType, [`@gabimoncha/cursor-rules${version}`]) || {};
+    return `${command} ${args?.join(' ') || ''}`;
   } catch (error) {
     logger.error('Error detecting package manager:', error);
-    throw new Error('Error detecting package manager', { cause: error })
+    throw new Error('Error detecting package manager', { cause: error });
   }
 };
 

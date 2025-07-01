@@ -1,53 +1,45 @@
-import { existsSync } from "node:fs";
-import fs from "node:fs/promises";
-import path from "node:path";
-import pc from "picocolors";
-import { logger } from "~/shared/logger.js";
+import { resolve } from 'node:path';
+import pc from 'picocolors';
+import { logger } from '~/shared/logger.js';
+import { scanPath } from '~/core/scanPath.js';
 
-export async function runListRulesAction() {
+export async function runListRulesAction(pattern: string) {
   try {
-    // Create .cursor directory if it doesn't exist
-    const cursorDir = path.join(process.cwd(), ".cursor", "rules");
+    const targetPath = resolve('.');
+    logger.info(pc.blue(`📂 Scanning path: ${targetPath}`));
 
-    if (!existsSync(cursorDir)) {
-      logger.warn("\n No .cursor/rules found.\n");
-      throw new Error("folder empty");
+    const pathMap = scanPath(targetPath, pattern, true);
 
+    const totalFiles = Array.from(pathMap.values()).reduce(
+      (sum, dirInfo) => sum + dirInfo.count,
+      0
+    );
+
+    if (totalFiles === 0) {
+      logger.warn('No rules were found');
+      return;
     }
 
-    const files = await fs.readdir(cursorDir);
+    logger.info(pc.green(`\nFound ${totalFiles} rules:`));
 
-    if (files.length === 0) {
-      logger.warn("\n .cursor/rules folder is empty.\n");
-      throw new Error("folder empty");
+    for (const [directory, dirInfo] of pathMap) {
+      const noun = dirInfo.count === 1 ? 'rule' : 'rules';
+      logger.log(`  ${pc.dim('•')} Found ${dirInfo.count} ${noun} in ${pc.cyan(directory)}`);
     }
-
-    let count = 0;
-    
-    logger.log('\n');
-    logger.prompt.intro(`Found ${files.length} Cursor rules:`);
-
-    for(const file of files) {
-      logger.prompt.message(file);
-      count++;
-    }
-    
-    logger.prompt.outro(``);
-    logger.quiet(`\n Found ${files.length} Cursor rules`);
 
     return;
   } catch (error) {
-    if((error as Error).message === "folder empty") {
-      logger.info("Run `cursor-rules init` to initialize the project.");
-      logger.info("Run `cursor-rules help` to see all commands.");
-      
-      logger.quiet(pc.yellow("\n No .cursor/rules found."));
-      logger.quiet(pc.cyan("\n Run `cursor-rules init` to initialize the project."));
+    if ((error as Error).message === 'folder empty') {
+      logger.info('Run `cursor-rules init` to initialize the project.');
+      logger.info('Run `cursor-rules help` to see all commands.');
+
+      logger.quiet(pc.yellow('\n No .cursor/rules found.'));
+      logger.quiet(pc.cyan('\n Run `cursor-rules init` to initialize the project.'));
       return;
     }
 
     // Handle case where we might not be in a project (e.g., global install)
-    logger.error("\n Failed to list cursor rules:", error);
+    logger.error('\n Failed to list cursor rules:', error);
     process.exit(1);
   }
 }

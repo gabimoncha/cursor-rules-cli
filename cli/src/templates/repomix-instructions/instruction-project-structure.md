@@ -26,10 +26,18 @@ The purpose of the project
 ```tree
 .
 ├── parent_folder/             # this is the parent_folder description
-│   ├── child_folder/               # this is the child_folder description
-│   └── other_child_folder/         # this is the other_child_folder description
+│   ├── child_folder/             # this is the child_folder description
+│   │   ├──   file1.md                # this is the file1.md description
+│   │   └──   file2.md                # this is the file2.md description
+│   └── other_child_folder/       # this is the other_child_folder description
+│       ├──   file3.md                # this is the file3.md description
+│       └──   file4.md                # this is the file4.md description
 └── single_folder/             # this is the single folder description
 ```
+
+## Architecture
+
+The flow diagram of the project and its logic
 
 ## Usage
 
