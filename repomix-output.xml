@@ -115,6 +115,7 @@ scripts/
 .gitignore
 .gitmodules
 .tool-versions
+biome.json
 CHANGELOG.md
 FUTURE_ENHANCEMENTS.md
 LICENSE
@@ -220,7 +221,8 @@ jobs:
 <file path="cli/bin/cursor-rules.js">
 const [major] = nodeVersion.split('.').map(Number);
 ⋮----
-console.error(`Cursor Rules requires Node.js version 20 or higher. Current version: ${nodeVersion}\n`);
+console.error(
+⋮----
 process.exit(EXIT_CODES.ERROR);
 ⋮----
 function setupErrorHandlers() {
@@ -241,7 +243,7 @@ process.on('SIGTERM', shutdown);
 ⋮----
 setupErrorHandlers();
 ⋮----
-await cli.run()
+await cli.run();
 ⋮----
 console.error('Fatal Error:', {
 ⋮----
@@ -284,12 +286,7 @@ import { regex } from 'regex';
 </file>
 
 <file path="cli/src/cli/actions/completionActions.ts">
-import {
-  getShellFromEnv,
-  isShellSupported,
-  install,
-  uninstall,
-} from '@pnpm/tabtab';
+import { getShellFromEnv, isShellSupported, install, uninstall } from '@pnpm/tabtab';
 import { logger } from '~/shared/logger.js';
 import { SHELL_LOCATIONS } from '~/cli/types.js';
 ⋮----
@@ -315,13 +312,9 @@ import {
   writeRepomixConfig,
   writeRepomixOutput,
 } from '~/cli/actions/repomixAction.js';
-import { CliOptions } from '~/cli/types.js';
+import type { CliOptions } from '~/cli/types.js';
 import { installRules, logInstallResult } from '~/core/installRules.js';
-import {
-  DEFAULT_REPOMIX_CONFIG,
-  REPOMIX_OPTIONS,
-  TEMPLATE_DIR,
-} from '~/shared/constants.js';
+import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 import { fileExists } from '~/core/fileExists.js';
 ⋮----
@@ -365,11 +358,7 @@ import {
   runCli as repomixAction,
 } from 'repomix';
 import { fileExists } from '~/core/fileExists.js';
-import {
-  DEFAULT_REPOMIX_CONFIG,
-  REPOMIX_OPTIONS,
-  TEMPLATE_DIR,
-} from '~/shared/constants.js';
+import { DEFAULT_REPOMIX_CONFIG, REPOMIX_OPTIONS, TEMPLATE_DIR } from '~/shared/constants.js';
 import { logger } from '~/shared/logger.js';
 export const runRepomixAction = async (quiet = false) =>
 // Check https://docs.cursor.com/settings/models#context-window-sizes
@@ -379,10 +368,7 @@ export const writeRepomixOutput = async (
   instructionFile = 'project-structure'
 ) =>
 export const writeRepomixConfig = async (config: RepomixConfig) =>
-const logContextWindowWarning = (
-  totalTokens: number,
-  ctx_windows: string[]
-) =>
+const logContextWindowWarning = (totalTokens: number, ctx_windows: string[]) =>
 </file>
 
 <file path="cli/src/cli/actions/scanRulesAction.ts">
@@ -399,12 +385,7 @@ export interface ScanOptions {
   pattern: string;
   sanitize?: boolean;
 }
-export const runScanRulesAction = ({
-  path,
-  filter,
-  pattern,
-  sanitize,
-}: ScanOptions) =>
+export const runScanRulesAction = (
 ⋮----
 // Apply filter to directory keys if provided
 ⋮----
@@ -473,11 +454,8 @@ export const run = async () =>
 ⋮----
 // Fall back to the original Commander error handler
 ⋮----
-const commanderActionEndpoint = async (
-  options: CliOptions = {},
-  command: Command
-) =>
-export const runCli = async (options: CliOptions =
+const commanderActionEndpoint = async (options: CliOptions, command: Command) =>
+export const runCli = async (options: CliOptions, command: Command) =>
 ⋮----
 // List command
 ⋮----
@@ -526,7 +504,7 @@ pattern?: string; // list option too
 <file path="cli/src/core/__tests__/commander-tabtab.test.ts">
 // @ts-nocheck
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { Command, Option } from 'commander';
+import { type Command, Option } from 'commander';
 import {
   getCommands,
   getOptions,
@@ -552,11 +530,7 @@ import fs from 'node:fs/promises';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { logger } from '~/shared/logger.js';
 import { fileExists } from '~/core/fileExists.js';
-import {
-  getPackageManager,
-  getPackageName,
-  getVersion,
-} from '~/core/packageJsonParse.js';
+import { getPackageManager, getPackageName, getVersion } from '~/core/packageJsonParse.js';
 import semver from 'semver';
 import pc from 'picocolors';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -590,24 +564,19 @@ async function writeCache(data: CachedData)
 </file>
 
 <file path="cli/src/core/commander-tabtab.ts">
-import tabtab, { CompletionItem, getShellFromEnv } from '@pnpm/tabtab';
-import { Command, Option } from 'commander';
+import tabtab, { type CompletionItem, getShellFromEnv } from '@pnpm/tabtab';
+import type { Command, Option } from 'commander';
 ⋮----
 // Extracted testable functions
 export const getCommands = (program: Command) =>
 export const getOptions = (targetCommand: Command): CompletionItem[][] =>
-export const filterByPrevArgs = (
-  options: CompletionItem[][],
-  prev: string[]
-): CompletionItem[] =>
+export const filterByPrevArgs = (options: CompletionItem[][], prev: string[]): CompletionItem[] =>
 ⋮----
 // filter conflicting options --verbose and --quiet, -q
 ⋮----
-export const filterByPrefix = (
-  options: CompletionItem[],
-  prefix: string
-): CompletionItem[] =>
+export const filterByPrefix = (options: CompletionItem[], prefix: string): CompletionItem[] =>
 export const findCommand = (program: Command, commandName: string) =>
+export const commanderTabtab = async (program: Command, binName: string) =>
 ⋮----
 // Command completion
 ⋮----
@@ -617,17 +586,21 @@ export const findCommand = (program: Command, commandName: string) =>
 </file>
 
 <file path="cli/src/core/fileExists.ts">
-import { statSync } from "node:fs";
+import { statSync } from 'node:fs';
 export const fileExists = (path: string) =>
 </file>
 
 <file path="cli/src/core/installRules.ts">
-import fs from "node:fs/promises";
-import path from "node:path";
-import { confirm } from "@clack/prompts";
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { confirm } from '@clack/prompts';
 import pc from 'picocolors';
-import { logger } from "~/shared/logger.js";
-export async function installRules(templateDir: string, overwrite: boolean = false, selectedRules: string[] = []):Promise<boolean>
+import { logger } from '~/shared/logger.js';
+export async function installRules(
+  templateDir: string,
+  overwrite = false,
+  selectedRules: string[] = []
+): Promise<boolean>
 ⋮----
 // Create .cursor directory if it doesn't exist
 ⋮----
@@ -648,7 +621,7 @@ export function logInstallResult(changesMade: boolean)
 import path from 'node:path';
 ⋮----
 import { logger } from '~/shared/logger.js';
-import { detect } from 'package-manager-detector/detect'
+import { detect } from 'package-manager-detector/detect';
 import { resolveCommand } from 'package-manager-detector/commands';
 export const getVersion = async (): Promise<string> =>
 export const getPackageName = async (): Promise<string> =>
@@ -668,7 +641,7 @@ interface DirectoryInfo {
 export function scanPath(
   pathStr: string,
   pattern: string,
-  isList: boolean = false
+  isList = false
 ): Map<string, DirectoryInfo>
 ⋮----
 // Recursively scan subdirectory and merge results
@@ -693,9 +666,9 @@ function excludeDefaultDirs(filename: string)
 </file>
 
 <file path="cli/src/shared/constants.ts">
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import type { RepomixConfig } from "repomix";
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type { RepomixConfig } from 'repomix';
 </file>
 
 <file path="cli/src/shared/errorHandle.ts">
@@ -732,8 +705,7 @@ WARN: 2, // warn
 INFO: 3, // success, info, log, note
 DEBUG: 4, // debug, trace
 ⋮----
-export type CursorRulesLogLevel =
-  (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
+export type CursorRulesLogLevel = (typeof cursorRulesLogLevels)[keyof typeof cursorRulesLogLevels];
 class CursorRulesLogger
 ⋮----
 constructor()
@@ -957,84 +929,84 @@ Should become:
 
 <file path="cli/package.json">
 {
-	"name": "@gabimoncha/cursor-rules",
-	"description": "A CLI for bootstrapping Cursor rules to a project",
-	"version": "0.2.0",
-	"type": "module",
-	"main": "./lib/index.js",
-	"types": "./lib/index.d.ts",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
-	},
-	"bugs": {
-		"url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
-	},
-	"author": "gabimoncha <gabimoncha@gmail.com>",
-	"homepage": "https://github.com/gabimoncha/cursor-rules-cli",
-	"license": "MIT",
-	"publishConfig": {
-		"access": "public"
-	},
-	"files": ["/lib", "/bin", "!src"],
-	"bin": {
-		"cursor-rules": "bin/cursor-rules.js"
-	},
-	"scripts": {
-		"clean": "rimraf lib",
-		"prepack": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-markdown",
-		"copy-markdown": "bun run ../scripts/copy-markdown.ts"
-	},
-	"keywords": [
-		"repository",
-		"cli",
-		"generative-ai",
-		"ai",
-		"llm",
-		"source-code",
-		"code-analysis",
-		"development-tool",
-		"cursor",
-		"cursor-directory",
-		"cursor-rules",
-		"cursor-rules-cli",
-		"cursor-ide",
-		"cursor-editor",
-		"cursor-rules-generator",
-		"cursor-rules-generator-cli",
-		"audit",
-		"autocompletion",
-		"repomix",
-		"scan",
-		"rules",
-		"instructions"
-	],
-	"dependencies": {
-		"@clack/prompts": "^0.11.0",
-		"@pnpm/tabtab": "^0.5.4",
-		"commander": "^14.0.0",
-		"minimist": "^1.2.8",
-		"package-manager-detector": "^1.3.0",
-		"picocolors": "^1.0.1",
-		"regex": "^6.0.1",
-		"repomix": "^1.0.0",
-		"semver": "^7.7.2",
-		"zod": "^3.25.67"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.2.17",
-		"@types/minimist": "^1.2.5",
-		"@types/node": "^22.14.0",
-		"@types/semver": "^7.7.0",
-		"rimraf": "^6.0.1",
-		"tsc-alias": "^1.8.16",
-		"typescript": "^5.8.3"
-	},
-	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
-	"directories": {
-		"example": "example",
-		"lib": "lib"
-	}
+  "name": "@gabimoncha/cursor-rules",
+  "description": "A CLI for bootstrapping Cursor rules to a project",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabimoncha/cursor-rules-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gabimoncha/cursor-rules-cli/issues"
+  },
+  "author": "gabimoncha <gabimoncha@gmail.com>",
+  "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": ["/lib", "/bin", "!src"],
+  "bin": {
+    "cursor-rules": "bin/cursor-rules.js"
+  },
+  "scripts": {
+    "clean": "rimraf lib",
+    "prepack": "bun clean && bun run tsc -p tsconfig.build.json --sourceMap --declaration && bun run tsc-alias -p tsconfig.build.json && bun run copy-markdown",
+    "copy-markdown": "bun run ../scripts/copy-markdown.ts"
+  },
+  "keywords": [
+    "repository",
+    "cli",
+    "generative-ai",
+    "ai",
+    "llm",
+    "source-code",
+    "code-analysis",
+    "development-tool",
+    "cursor",
+    "cursor-directory",
+    "cursor-rules",
+    "cursor-rules-cli",
+    "cursor-ide",
+    "cursor-editor",
+    "cursor-rules-generator",
+    "cursor-rules-generator-cli",
+    "audit",
+    "autocompletion",
+    "repomix",
+    "scan",
+    "rules",
+    "instructions"
+  ],
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "@pnpm/tabtab": "^0.5.4",
+    "commander": "^14.0.0",
+    "minimist": "^1.2.8",
+    "package-manager-detector": "^1.3.0",
+    "picocolors": "^1.0.1",
+    "regex": "^6.0.1",
+    "repomix": "^1.1.0",
+    "semver": "^7.7.2",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.17",
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^22.14.0",
+    "@types/semver": "^7.7.0",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "directories": {
+    "example": "example",
+    "lib": "lib"
+  }
 }
 </file>
 
@@ -1493,12 +1465,12 @@ alwaysApply: true
 
 <file path="example/package.json">
 {
-	"name": "example",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"clean": "rm -rf repomix-output.xml repomix.config.json && find .cursor/rules -mindepth 1 ! -name 'bad-rule.mdc' -exec rm -rf -- {} +"
-	}
+  "name": "example",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf repomix-output.xml repomix.config.json && find .cursor/rules -mindepth 1 ! -name 'bad-rule.mdc' -exec rm -rf -- {} +"
+  }
 }
 </file>
 
@@ -1597,6 +1569,52 @@ example/.cursor*
 
 <file path=".tool-versions">
 yarn 1.22.22
+</file>
+
+<file path="biome.json">
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "ignore": ["node_modules", ".vscode", "lib"]
+  },
+  "formatter": {
+    "enabled": true,
+    "useEditorconfig": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 100,
+    "attributePosition": "auto",
+    "bracketSpacing": true
+  },
+  "organizeImports": { "enabled": true },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "es5",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "auto",
+      "bracketSpacing": true
+    }
+  }
+}
 </file>
 
 <file path="CHANGELOG.md">
@@ -1721,10 +1739,7 @@ SOFTWARE.
   },
   "homepage": "https://github.com/gabimoncha/cursor-rules-cli",
   "license": "MIT",
-  "workspaces": [
-    "cli",
-    "example"
-  ],
+  "workspaces": ["cli", "example"],
   "scripts": {
     "repomix": "repomix --config repomix.config.json",
     "prepublishOnly": "bun --cwd example clean && bun --cwd cli prepack",
@@ -1738,7 +1753,7 @@ SOFTWARE.
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "bun@1.2.18"
 }
 </file>
 
